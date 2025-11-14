@@ -9,7 +9,11 @@ const cameraIPs = [
   { ip: "192.168.0.225", position: "Right" },
 ];
 
-export const CameraView = () => {
+interface CameraViewProps {
+  onBackClick?: () => void;
+}
+
+export const CameraView = ({ onBackClick }: CameraViewProps) => {
   const [cameraStatus, setCameraStatus] = useState<Record<string, boolean>>({});
   const [loadStreams, setLoadStreams] = useState(false);
 
