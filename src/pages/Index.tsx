@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { Layout } from "@/components/Layout";
-import { ControllerView } from "@/components/ControllerView";
+import { DashboardView } from "@/components/DashboardView";
 import { CameraView } from "@/components/CameraView";
-import { BlindSpotView } from "@/components/BlindSpotView";
 
 const Index = () => {
-  const [activeView, setActiveView] = useState<"controller" | "camera" | "blindspot">("controller");
+  const [activeView, setActiveView] = useState<"dashboard" | "camera">("dashboard");
 
   return (
-    <Layout activeView={activeView} onViewChange={setActiveView}>
-      {activeView === "controller" && <ControllerView />}
+    <Layout 
+      showBackButton={activeView === "camera"}
+      onBackClick={() => setActiveView("dashboard")}
+    >
+      {activeView === "dashboard" && <DashboardView onCameraClick={() => setActiveView("camera")} />}
       {activeView === "camera" && <CameraView />}
-      {activeView === "blindspot" && <BlindSpotView />}
     </Layout>
   );
 };
