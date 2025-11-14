@@ -116,60 +116,50 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
     <div className="flex flex-col min-h-screen">
       <div className="flex-1 p-4 flex items-center justify-center">
         <div className="w-full max-w-sm mx-auto relative">
-          {/* Blindspot Detection Waves - Left */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full">
-            {leftStatus === 'detected' ? (
-              <div className="flex flex-col gap-1.5">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-12 h-0.5 bg-success rounded-full animate-pulse"
-                    style={{
-                      animationDelay: `${i * 0.15}s`,
-                      opacity: 1 - i * 0.2,
-                    }}
-                  />
-                ))}
+          {/* Blindspot Detection - Left */}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 flex flex-col items-center gap-2">
+            <svg width="60" height="120" viewBox="0 0 60 120" className="overflow-visible">
+              <path
+                d="M 50 10 Q 20 30, 20 60 Q 20 90, 50 110"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={`transition-all duration-300 ${
+                  leftStatus === 'detected' 
+                    ? 'text-success animate-pulse' 
+                    : 'text-muted-foreground/30'
+                }`}
+              />
+            </svg>
+            <div className="text-xs text-muted-foreground font-medium">
+              <div>Left</div>
+              <div className={leftStatus === 'detected' ? 'text-success' : ''}>
+                {leftStatus === 'detected' ? 'ON' : 'OFF'}
               </div>
-            ) : (
-              <div className="flex flex-col gap-1.5">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-10 h-0.5 bg-muted rounded-full"
-                    style={{ opacity: 0.4 - i * 0.1 }}
-                  />
-                ))}
-              </div>
-            )}
+            </div>
           </div>
 
-          {/* Blindspot Detection Waves - Right */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full">
-            {rightStatus === 'detected' ? (
-              <div className="flex flex-col gap-1.5">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-12 h-0.5 bg-success rounded-full animate-pulse"
-                    style={{
-                      animationDelay: `${i * 0.15}s`,
-                      opacity: 1 - i * 0.2,
-                    }}
-                  />
-                ))}
+          {/* Blindspot Detection - Right */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 flex flex-col items-center gap-2">
+            <svg width="60" height="120" viewBox="0 0 60 120" className="overflow-visible">
+              <path
+                d="M 10 10 Q 40 30, 40 60 Q 40 90, 10 110"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={`transition-all duration-300 ${
+                  rightStatus === 'detected' 
+                    ? 'text-success animate-pulse' 
+                    : 'text-muted-foreground/30'
+                }`}
+              />
+            </svg>
+            <div className="text-xs text-muted-foreground font-medium">
+              <div>Right</div>
+              <div className={rightStatus === 'detected' ? 'text-success' : ''}>
+                {rightStatus === 'detected' ? 'ON' : 'OFF'}
               </div>
-            ) : (
-              <div className="flex flex-col gap-1.5">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-10 h-0.5 bg-muted rounded-full"
-                    style={{ opacity: 0.4 - i * 0.1 }}
-                  />
-                ))}
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Main Control Buttons */}
