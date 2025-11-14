@@ -113,57 +113,73 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
   const rightStatus = getDetectionStatus(sensorData.right);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1 p-4 flex items-center justify-center">
+    <div className="flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 flex items-center justify-center px-4 py-2">
         <div className="w-full max-w-sm mx-auto relative">
           {/* Blindspot Detection - Left */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 flex flex-col items-center gap-2">
-            <svg width="60" height="120" viewBox="0 0 60 120" className="overflow-visible">
-              <path
-                d="M 50 10 Q 20 30, 20 60 Q 20 90, 50 110"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className={`transition-all duration-300 ${
-                  leftStatus === 'detected' 
-                    ? 'text-success animate-pulse' 
-                    : 'text-muted-foreground/30'
-                }`}
-              />
-            </svg>
-            <div className="text-xs text-muted-foreground font-medium">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 flex flex-col items-center gap-1">
+            <div className="flex flex-col-reverse gap-0.5">
+              {[24, 32, 40].map((height, i) => (
+                <svg key={i} width="24" height={height} viewBox={`0 0 24 ${height}`}>
+                  <path
+                    d={`M 20 ${height} Q 12 ${height * 0.7}, 12 0`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    className={`transition-all duration-300 ${
+                      leftStatus === 'detected' 
+                        ? 'text-success' 
+                        : 'text-muted-foreground/30'
+                    }`}
+                    style={{
+                      animationDelay: leftStatus === 'detected' ? `${i * 0.1}s` : '0s'
+                    }}
+                  />
+                </svg>
+              ))}
+            </div>
+            <div className="text-[10px] text-center text-muted-foreground font-medium mt-1">
               <div>Left</div>
-              <div className={leftStatus === 'detected' ? 'text-success' : ''}>
+              <div className={leftStatus === 'detected' ? 'text-success font-semibold' : ''}>
                 {leftStatus === 'detected' ? 'ON' : 'OFF'}
               </div>
             </div>
           </div>
 
           {/* Blindspot Detection - Right */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 flex flex-col items-center gap-2">
-            <svg width="60" height="120" viewBox="0 0 60 120" className="overflow-visible">
-              <path
-                d="M 10 10 Q 40 30, 40 60 Q 40 90, 10 110"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className={`transition-all duration-300 ${
-                  rightStatus === 'detected' 
-                    ? 'text-success animate-pulse' 
-                    : 'text-muted-foreground/30'
-                }`}
-              />
-            </svg>
-            <div className="text-xs text-muted-foreground font-medium">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 flex flex-col items-center gap-1">
+            <div className="flex flex-col-reverse gap-0.5">
+              {[24, 32, 40].map((height, i) => (
+                <svg key={i} width="24" height={height} viewBox={`0 0 24 ${height}`}>
+                  <path
+                    d={`M 4 ${height} Q 12 ${height * 0.7}, 12 0`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    className={`transition-all duration-300 ${
+                      rightStatus === 'detected' 
+                        ? 'text-success' 
+                        : 'text-muted-foreground/30'
+                    }`}
+                    style={{
+                      animationDelay: rightStatus === 'detected' ? `${i * 0.1}s` : '0s'
+                    }}
+                  />
+                </svg>
+              ))}
+            </div>
+            <div className="text-[10px] text-center text-muted-foreground font-medium mt-1">
               <div>Right</div>
-              <div className={rightStatus === 'detected' ? 'text-success' : ''}>
+              <div className={rightStatus === 'detected' ? 'text-success font-semibold' : ''}>
                 {rightStatus === 'detected' ? 'ON' : 'OFF'}
               </div>
             </div>
           </div>
 
           {/* Main Control Buttons */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Ignition Button */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -236,7 +252,7 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
           </div>
 
           {/* Status Text */}
-          <div className="mt-4 text-center space-y-1">
+          <div className="mt-2 text-center space-y-0.5">
             <p className="text-xs text-muted-foreground">
               {ignitionOn ? "Engine Running" : "Engine Stopped"}
             </p>
@@ -250,9 +266,9 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
       </div>
 
       {/* Footer */}
-      <footer className="py-4 border-t border-border/50">
+      <footer className="py-2 border-t border-border/50 flex-shrink-0">
         <div className="container mx-auto px-4">
-          <p className="text-xs text-center text-muted-foreground">
+          <p className="text-[10px] text-center text-muted-foreground">
             VehiCtrl System v1.0 • All Rights Reserved
           </p>
         </div>

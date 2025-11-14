@@ -25,11 +25,9 @@ export const Layout = ({ children, showBackButton, onBackClick }: LayoutProps) =
               ← Back
             </Button>
           ) : (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center p-1.5">
-                <img src={logo} alt="VehiCtrl" className="w-full h-full object-contain" />
-              </div>
-              <h1 className="text-xl font-bold tracking-tight">VehiCtrl</h1>
+            <div className="flex items-center gap-2">
+              <img src={logo} alt="VehiCtrl" className="w-7 h-7 object-contain" />
+              <h1 className="text-lg font-bold tracking-tight">VehiCtrl</h1>
             </div>
           )}
           
