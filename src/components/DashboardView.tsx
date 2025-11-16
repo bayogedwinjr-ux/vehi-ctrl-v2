@@ -114,90 +114,80 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <div className="flex-1 flex items-center justify-center px-4 py-4">
-        <div className="w-full max-w-md mx-auto relative flex items-center justify-center">
-          {/* Blindspot Detection - Left */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-20 flex flex-col items-center gap-2">
-            <div className="flex flex-col-reverse gap-1">
-              {[60, 75, 90].map((height, i) => (
-                <svg key={i} width="32" height={height} viewBox={`0 0 32 ${height}`}>
-                  <path
-                    d={`M 28 ${height} Q 22 ${height * 0.6} 22 0`}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    className={`transition-all duration-300 ${
-                      leftStatus === 'detected' 
-                        ? 'text-success' 
-                        : 'text-muted-foreground/40'
-                    }`}
-                  />
-                </svg>
-              ))}
-            </div>
-            <div className="text-[11px] text-center text-muted-foreground font-medium">
-              <div>Left</div>
-              <div className={leftStatus === 'detected' ? 'text-success font-semibold' : ''}>
-                {leftStatus === 'detected' ? 'ON' : 'OFF'}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-2">
+        <div className="w-full max-w-md mx-auto flex flex-col items-center gap-6">
+          {/* Blindspot Detection - Car Tail Lights Style */}
+          <div className="flex items-center justify-center gap-12">
+            {/* Left Tail Light */}
+            <div className="flex flex-col items-center gap-2">
+              <div className={`w-16 h-20 rounded-lg border-2 transition-all duration-300 relative overflow-hidden ${
+                leftStatus === 'detected' 
+                  ? 'bg-destructive/90 border-destructive shadow-[0_0_20px_rgba(239,68,68,0.6)]' 
+                  : 'bg-muted/30 border-border'
+              }`}>
+                {/* Inner glow effect */}
+                <div className={`absolute inset-2 rounded transition-all duration-300 ${
+                  leftStatus === 'detected' 
+                    ? 'bg-destructive/40 shadow-[0_0_15px_rgba(239,68,68,0.8)]' 
+                    : 'bg-muted/20'
+                }`} />
+                {/* Reflective bars */}
+                <div className="absolute inset-x-0 top-1/3 h-0.5 bg-foreground/10" />
+                <div className="absolute inset-x-0 bottom-1/3 h-0.5 bg-foreground/10" />
+              </div>
+              <div className="text-[10px] text-center text-muted-foreground font-medium">
+                <div className={leftStatus === 'detected' ? 'text-destructive font-semibold' : ''}>
+                  {leftStatus === 'detected' ? 'DETECTED' : 'CLEAR'}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Blindspot Detection - Right */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-20 flex flex-col items-center gap-2">
-            <div className="flex flex-col-reverse gap-1">
-              {[60, 75, 90].map((height, i) => (
-                <svg key={i} width="32" height={height} viewBox={`0 0 32 ${height}`}>
-                  <path
-                    d={`M 4 ${height} Q 10 ${height * 0.6} 10 0`}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    className={`transition-all duration-300 ${
-                      rightStatus === 'detected' 
-                        ? 'text-success' 
-                        : 'text-muted-foreground/40'
-                    }`}
-                  />
-                </svg>
-              ))}
-            </div>
-            <div className="text-[11px] text-center text-muted-foreground font-medium">
-              <div>Right</div>
-              <div className={rightStatus === 'detected' ? 'text-success font-semibold' : ''}>
-                {rightStatus === 'detected' ? 'ON' : 'OFF'}
+            {/* Right Tail Light */}
+            <div className="flex flex-col items-center gap-2">
+              <div className={`w-16 h-20 rounded-lg border-2 transition-all duration-300 relative overflow-hidden ${
+                rightStatus === 'detected' 
+                  ? 'bg-destructive/90 border-destructive shadow-[0_0_20px_rgba(239,68,68,0.6)]' 
+                  : 'bg-muted/30 border-border'
+              }`}>
+                {/* Inner glow effect */}
+                <div className={`absolute inset-2 rounded transition-all duration-300 ${
+                  rightStatus === 'detected' 
+                    ? 'bg-destructive/40 shadow-[0_0_15px_rgba(239,68,68,0.8)]' 
+                    : 'bg-muted/20'
+                }`} />
+                {/* Reflective bars */}
+                <div className="absolute inset-x-0 top-1/3 h-0.5 bg-foreground/10" />
+                <div className="absolute inset-x-0 bottom-1/3 h-0.5 bg-foreground/10" />
+              </div>
+              <div className="text-[10px] text-center text-muted-foreground font-medium">
+                <div className={rightStatus === 'detected' ? 'text-destructive font-semibold' : ''}>
+                  {rightStatus === 'detected' ? 'DETECTED' : 'CLEAR'}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Main Control Buttons - All Equal Size */}
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-3">
             {/* Ignition Button */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="relative">
                   <button
                     onMouseDown={handleIgnitionPress}
                     onMouseUp={handleIgnitionRelease}
                     onMouseLeave={handleIgnitionRelease}
                     onTouchStart={handleIgnitionPress}
                     onTouchEnd={handleIgnitionRelease}
-                    className={`w-36 h-36 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
+                    className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
                       isIgnitionPressed || ignitionOn
                         ? 'bg-gradient-primary scale-95'
                         : 'bg-card border-2 border-border hover:border-primary/50'
                     }`}
                   >
-                    <Power className={`h-11 w-11 transition-all ${
+                    <Power className={`h-10 w-10 transition-all ${
                       isIgnitionPressed || ignitionOn ? 'text-primary-foreground' : 'text-muted-foreground'
                     }`} />
                   </button>
-                  {(leftStatus === 'detected' || rightStatus === 'detected') && (
-                    <div className="absolute top-2 right-8 w-2.5 h-2.5 bg-success rounded-full animate-pulse" />
-                  )}
-                </div>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Hold to start ignition</p>
@@ -213,13 +203,13 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
                   onMouseLeave={handleAcRelease}
                   onTouchStart={handleAcPress}
                   onTouchEnd={handleAcRelease}
-                  className={`w-36 h-36 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
+                  className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
                     isAcPressed || acOn
                       ? 'bg-gradient-primary scale-95'
                       : 'bg-card border-2 border-border hover:border-primary/50'
                   }`}
                 >
-                  <Wind className={`h-11 w-11 transition-all ${
+                  <Wind className={`h-10 w-10 transition-all ${
                     isAcPressed || acOn ? 'text-primary-foreground' : 'text-muted-foreground'
                   }`} />
                 </button>
@@ -234,9 +224,9 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
               <TooltipTrigger asChild>
                 <button
                   onClick={onCameraClick}
-                  className="w-36 h-36 rounded-full bg-card border-2 border-border hover:border-primary/50 transition-all shadow-control hover:shadow-glow flex items-center justify-center group"
+                  className="w-32 h-32 rounded-full bg-card border-2 border-border hover:border-primary/50 transition-all shadow-control hover:shadow-glow flex items-center justify-center group"
                 >
-                  <Video className="h-11 w-11 text-muted-foreground group-hover:text-primary transition-all" />
+                  <Video className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-all" />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
@@ -248,13 +238,13 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
       </div>
 
       {/* Status Text */}
-      <div className="pb-3 text-center space-y-1">
+      <div className="pb-2 text-center space-y-1">
         <p className="text-xs text-muted-foreground">
           {ignitionOn ? "Engine Running" : "Engine Stopped"}
         </p>
         {(leftStatus === 'detected' || rightStatus === 'detected') && (
-          <p className="text-xs text-success font-medium animate-pulse">
-            ⚠️ Blindspot Detection Active
+          <p className="text-xs text-destructive font-medium animate-pulse">
+            ⚠️ Blindspot Alert
           </p>
         )}
       </div>
