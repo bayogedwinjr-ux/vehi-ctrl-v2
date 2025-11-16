@@ -117,7 +117,7 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-2">
         <div className="w-full max-w-md mx-auto flex flex-col items-center gap-6">
           {/* Blindspot Detection - Car Tail Lights Style */}
-          <div className="flex items-center justify-center gap-12">
+          <div className="flex items-center justify-between w-full max-w-xs">
             {/* Left Tail Light */}
             <div className="flex flex-col items-center gap-2">
               <div className={`w-16 h-20 rounded-lg border-2 transition-all duration-300 relative overflow-hidden ${
