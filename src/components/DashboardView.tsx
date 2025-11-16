@@ -114,32 +114,29 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <div className="flex-1 flex items-center justify-center px-4 py-2">
-        <div className="w-full max-w-sm mx-auto relative">
+      <div className="flex-1 flex items-center justify-center px-4 py-4">
+        <div className="w-full max-w-md mx-auto relative flex items-center justify-center">
           {/* Blindspot Detection - Left */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 flex flex-col items-center gap-1">
-            <div className="flex flex-col-reverse gap-0.5">
-              {[24, 32, 40].map((height, i) => (
-                <svg key={i} width="24" height={height} viewBox={`0 0 24 ${height}`}>
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-20 flex flex-col items-center gap-2">
+            <div className="flex flex-col-reverse gap-1">
+              {[60, 75, 90].map((height, i) => (
+                <svg key={i} width="32" height={height} viewBox={`0 0 32 ${height}`}>
                   <path
-                    d={`M 20 ${height} Q 12 ${height * 0.7}, 12 0`}
+                    d={`M 28 ${height} Q 22 ${height * 0.6} 22 0`}
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2.5"
+                    strokeWidth="3"
                     strokeLinecap="round"
                     className={`transition-all duration-300 ${
                       leftStatus === 'detected' 
                         ? 'text-success' 
-                        : 'text-muted-foreground/30'
+                        : 'text-muted-foreground/40'
                     }`}
-                    style={{
-                      animationDelay: leftStatus === 'detected' ? `${i * 0.1}s` : '0s'
-                    }}
                   />
                 </svg>
               ))}
             </div>
-            <div className="text-[10px] text-center text-muted-foreground font-medium mt-1">
+            <div className="text-[11px] text-center text-muted-foreground font-medium">
               <div>Left</div>
               <div className={leftStatus === 'detected' ? 'text-success font-semibold' : ''}>
                 {leftStatus === 'detected' ? 'ON' : 'OFF'}
@@ -148,29 +145,26 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
           </div>
 
           {/* Blindspot Detection - Right */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 flex flex-col items-center gap-1">
-            <div className="flex flex-col-reverse gap-0.5">
-              {[24, 32, 40].map((height, i) => (
-                <svg key={i} width="24" height={height} viewBox={`0 0 24 ${height}`}>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-20 flex flex-col items-center gap-2">
+            <div className="flex flex-col-reverse gap-1">
+              {[60, 75, 90].map((height, i) => (
+                <svg key={i} width="32" height={height} viewBox={`0 0 32 ${height}`}>
                   <path
-                    d={`M 4 ${height} Q 12 ${height * 0.7}, 12 0`}
+                    d={`M 4 ${height} Q 10 ${height * 0.6} 10 0`}
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2.5"
+                    strokeWidth="3"
                     strokeLinecap="round"
                     className={`transition-all duration-300 ${
                       rightStatus === 'detected' 
                         ? 'text-success' 
-                        : 'text-muted-foreground/30'
+                        : 'text-muted-foreground/40'
                     }`}
-                    style={{
-                      animationDelay: rightStatus === 'detected' ? `${i * 0.1}s` : '0s'
-                    }}
                   />
                 </svg>
               ))}
             </div>
-            <div className="text-[10px] text-center text-muted-foreground font-medium mt-1">
+            <div className="text-[11px] text-center text-muted-foreground font-medium">
               <div>Right</div>
               <div className={rightStatus === 'detected' ? 'text-success font-semibold' : ''}>
                 {rightStatus === 'detected' ? 'ON' : 'OFF'}
@@ -178,30 +172,30 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
             </div>
           </div>
 
-          {/* Main Control Buttons */}
-          <div className="space-y-3">
+          {/* Main Control Buttons - All Equal Size */}
+          <div className="flex flex-col items-center gap-4">
             {/* Ignition Button */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="relative group">
+                <div className="relative">
                   <button
                     onMouseDown={handleIgnitionPress}
                     onMouseUp={handleIgnitionRelease}
                     onMouseLeave={handleIgnitionRelease}
                     onTouchStart={handleIgnitionPress}
                     onTouchEnd={handleIgnitionRelease}
-                    className={`w-40 h-40 mx-auto rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
+                    className={`w-36 h-36 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
                       isIgnitionPressed || ignitionOn
                         ? 'bg-gradient-primary scale-95'
                         : 'bg-card border-2 border-border hover:border-primary/50'
                     }`}
                   >
-                    <Power className={`h-12 w-12 transition-all ${
+                    <Power className={`h-11 w-11 transition-all ${
                       isIgnitionPressed || ignitionOn ? 'text-primary-foreground' : 'text-muted-foreground'
                     }`} />
                   </button>
                   {(leftStatus === 'detected' || rightStatus === 'detected') && (
-                    <div className="absolute top-3 right-1/4 w-2.5 h-2.5 bg-success rounded-full animate-pulse" />
+                    <div className="absolute top-2 right-8 w-2.5 h-2.5 bg-success rounded-full animate-pulse" />
                   )}
                 </div>
               </TooltipTrigger>
@@ -219,13 +213,13 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
                   onMouseLeave={handleAcRelease}
                   onTouchStart={handleAcPress}
                   onTouchEnd={handleAcRelease}
-                  className={`w-36 h-36 mx-auto rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
+                  className={`w-36 h-36 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
                     isAcPressed || acOn
                       ? 'bg-gradient-primary scale-95'
                       : 'bg-card border-2 border-border hover:border-primary/50'
                   }`}
                 >
-                  <Wind className={`h-10 w-10 transition-all ${
+                  <Wind className={`h-11 w-11 transition-all ${
                     isAcPressed || acOn ? 'text-primary-foreground' : 'text-muted-foreground'
                   }`} />
                 </button>
@@ -240,9 +234,9 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
               <TooltipTrigger asChild>
                 <button
                   onClick={onCameraClick}
-                  className="w-32 h-32 mx-auto rounded-full bg-card border-2 border-border hover:border-primary/50 transition-all shadow-control hover:shadow-glow flex items-center justify-center group"
+                  className="w-36 h-36 rounded-full bg-card border-2 border-border hover:border-primary/50 transition-all shadow-control hover:shadow-glow flex items-center justify-center group"
                 >
-                  <Video className="h-9 w-9 text-muted-foreground group-hover:text-primary transition-all" />
+                  <Video className="h-11 w-11 text-muted-foreground group-hover:text-primary transition-all" />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
@@ -250,19 +244,19 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
               </TooltipContent>
             </Tooltip>
           </div>
-
-          {/* Status Text */}
-          <div className="mt-2 text-center space-y-0.5">
-            <p className="text-xs text-muted-foreground">
-              {ignitionOn ? "Engine Running" : "Engine Stopped"}
-            </p>
-            {(leftStatus === 'detected' || rightStatus === 'detected') && (
-              <p className="text-xs text-success font-medium animate-pulse">
-                ⚠️ Blindspot Detection Active
-              </p>
-            )}
-          </div>
         </div>
+      </div>
+
+      {/* Status Text */}
+      <div className="pb-3 text-center space-y-1">
+        <p className="text-xs text-muted-foreground">
+          {ignitionOn ? "Engine Running" : "Engine Stopped"}
+        </p>
+        {(leftStatus === 'detected' || rightStatus === 'detected') && (
+          <p className="text-xs text-success font-medium animate-pulse">
+            ⚠️ Blindspot Detection Active
+          </p>
+        )}
       </div>
 
       {/* Footer */}
