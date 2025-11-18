@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { AlertCircle, X } from "lucide-react";
 
 const cameraIPs = [
   { ip: "192.168.0.222", position: "Front" },
@@ -16,6 +17,7 @@ interface CameraViewProps {
 export const CameraView = ({ onBackClick }: CameraViewProps) => {
   const [cameraStatus, setCameraStatus] = useState<Record<string, boolean>>({});
   const [loadStreams, setLoadStreams] = useState(false);
+  const [selectedCamera, setSelectedCamera] = useState<{ ip: string; position: string } | null>(null);
 
   // Only load camera streams when component is mounted and visible
   useEffect(() => {
@@ -61,7 +63,10 @@ export const CameraView = ({ onBackClick }: CameraViewProps) => {
             key={camera.ip}
             className="overflow-hidden bg-gradient-card border-border hover:border-primary/50 transition-all"
           >
-            <div className="aspect-video bg-muted/50 relative flex items-center justify-center">
+            <div 
+              className="aspect-video bg-muted/50 relative flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => setSelectedCamera(camera)}
+            >
               {/* Camera Stream - Only load when component is visible */}
               {loadStreams ? (
                 <img
@@ -103,6 +108,36 @@ export const CameraView = ({ onBackClick }: CameraViewProps) => {
           <p>Make sure all ESP32 cameras are powered on and connected to the network. Streams refresh automatically.</p>
         </div>
       </Card>
+
+      {/* Fullscreen Camera Dialog */}
+      <Dialog open={!!selectedCamera} onOpenChange={(open) => !open && setSelectedCamera(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0">
+          <DialogTitle className="sr-only">
+            {selectedCamera?.position} Camera View
+          </DialogTitle>
+          <div className="relative w-full h-full bg-black">
+            <button
+              onClick={() => setSelectedCamera(null)}
+              className="absolute top-4 right-4 z-10 p-2 bg-background/80 hover:bg-background rounded-full transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            {selectedCamera && (
+              <img
+                src={`http://${selectedCamera.ip}/stream`}
+                alt={`${selectedCamera.position} camera fullscreen`}
+                className="w-full h-full object-contain"
+              />
+            )}
+            {selectedCamera && (
+              <div className="absolute bottom-4 left-4 bg-background/80 px-4 py-2 rounded-md">
+                <p className="font-semibold">{selectedCamera.position}</p>
+                <p className="text-xs text-muted-foreground">{selectedCamera.ip}</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
