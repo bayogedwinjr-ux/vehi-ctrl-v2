@@ -20,7 +20,6 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
   const [acOn, setAcOn] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>({ left: null, right: null });
   const [isIgnitionPressed, setIsIgnitionPressed] = useState(false);
-  const [isAcPressed, setIsAcPressed] = useState(false);
 
   // Fetch blindspot sensor data
   useEffect(() => {
@@ -75,28 +74,13 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
     }
   };
 
-  const handleAcPress = async () => {
-    setIsAcPressed(true);
+  const handleAcToggle = async () => {
+    const newAcState = !acOn;
     try {
-      const response = await fetch(`http://${RASPBERRY_PI_IP}/control?ac=1`);
+      const response = await fetch(`http://${RASPBERRY_PI_IP}/control?ac=${newAcState ? 1 : 0}`);
       if (response.ok) {
-        setAcOn(true);
-        toast.success("AC turned on");
-      }
-    } catch (error) {
-      toast.error("Failed to control AC");
-      console.error('AC control error:', error);
-    }
-  };
-
-  const handleAcRelease = async () => {
-    if (!isAcPressed) return; // Only release if button was pressed
-    setIsAcPressed(false);
-    try {
-      const response = await fetch(`http://${RASPBERRY_PI_IP}/control?ac=0`);
-      if (response.ok) {
-        setAcOn(false);
-        toast.success("AC turned off");
+        setAcOn(newAcState);
+        toast.success(newAcState ? "AC turned on" : "AC turned off");
       }
     } catch (error) {
       toast.error("Failed to control AC");
@@ -198,24 +182,20 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onMouseDown={handleAcPress}
-                  onMouseUp={handleAcRelease}
-                  onMouseLeave={handleAcRelease}
-                  onTouchStart={handleAcPress}
-                  onTouchEnd={handleAcRelease}
+                  onClick={handleAcToggle}
                   className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
-                    isAcPressed || acOn
+                    acOn
                       ? 'bg-gradient-primary scale-95'
                       : 'bg-card border-2 border-border hover:border-primary/50'
                   }`}
                 >
                   <Wind className={`h-10 w-10 transition-all ${
-                    isAcPressed || acOn ? 'text-primary-foreground' : 'text-muted-foreground'
+                    acOn ? 'text-primary-foreground' : 'text-muted-foreground'
                   }`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Hold to activate AC</p>
+                <p>Toggle AC on/off</p>
               </TooltipContent>
             </Tooltip>
 
