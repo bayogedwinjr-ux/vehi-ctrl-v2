@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 const cameraIPs = [
   { ip: "192.168.0.222", position: "Front" },
@@ -116,12 +116,6 @@ export const CameraView = ({ onBackClick }: CameraViewProps) => {
             {selectedCamera?.position} Camera View
           </DialogTitle>
           <div className="relative w-full h-full bg-black">
-            <button
-              onClick={() => setSelectedCamera(null)}
-              className="absolute top-4 right-4 z-10 p-2 bg-background/80 hover:bg-background rounded-full transition-colors"
-            >
-              <X className="h-6 w-6" />
-            </button>
             {selectedCamera && (
               <img
                 src={`http://${selectedCamera.ip}/stream`}
