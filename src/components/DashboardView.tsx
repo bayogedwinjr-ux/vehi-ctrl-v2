@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const RASPBERRY_PI_IP = "192.168.0.144";
+const RASPBERRY_PI_IP = "192.168.8.101";
 
 interface SensorData {
   left: number | null;
@@ -25,10 +25,10 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
   useEffect(() => {
     const fetchSensorData = async () => {
       try {
-        const leftResponse = await fetch('http://192.168.0.226/data');
+        const leftResponse = await fetch('http://192.168.8.226/data');
         const leftData = await leftResponse.json();
         
-        const rightResponse = await fetch('http://192.168.0.227/data');
+        const rightResponse = await fetch('http://192.168.8.227/data');
         const rightData = await rightResponse.json();
         
         setSensorData({
@@ -38,7 +38,7 @@ export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
       } catch (error) {
         console.error('Error fetching sensor data:', error);
       }
-    };
+    };  
 
     fetchSensorData();
     const interval = setInterval(fetchSensorData, 500);

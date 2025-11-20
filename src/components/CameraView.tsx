@@ -4,10 +4,10 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AlertCircle } from "lucide-react";
 
 const cameraIPs = [
-  { ip: "192.168.0.222", position: "Front" },
-  { ip: "192.168.0.223", position: "Rear" },
-  { ip: "192.168.0.224", position: "Left" },
-  { ip: "192.168.0.225", position: "Right" },
+  { ip: "192.168.8.222", position: "Front" },
+  { ip: "192.168.8.223", position: "Rear" },
+  { ip: "192.168.8.224", position: "Left" },
+  { ip: "192.168.8.225", position: "Right" },
 ];
 
 interface CameraViewProps {
