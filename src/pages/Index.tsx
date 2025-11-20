@@ -5,13 +5,20 @@ import { CameraView } from "@/components/CameraView";
 
 const Index = () => {
   const [activeView, setActiveView] = useState<"dashboard" | "camera">("dashboard");
+  const [acOn, setAcOn] = useState(false);
 
   return (
     <Layout 
       showBackButton={activeView === "camera"}
       onBackClick={() => setActiveView("dashboard")}
     >
-      {activeView === "dashboard" && <DashboardView onCameraClick={() => setActiveView("camera")} />}
+      {activeView === "dashboard" && (
+        <DashboardView 
+          onCameraClick={() => setActiveView("camera")}
+          acOn={acOn}
+          setAcOn={setAcOn}
+        />
+      )}
       {activeView === "camera" && <CameraView />}
     </Layout>
   );
