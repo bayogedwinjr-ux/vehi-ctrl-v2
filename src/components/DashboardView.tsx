@@ -13,11 +13,12 @@ interface SensorData {
 
 interface DashboardViewProps {
   onCameraClick: () => void;
+  acOn: boolean;
+  setAcOn: (value: boolean) => void;
 }
 
-export const DashboardView = ({ onCameraClick }: DashboardViewProps) => {
+export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewProps) => {
   const [ignitionOn, setIgnitionOn] = useState(false);
-  const [acOn, setAcOn] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>({ left: null, right: null });
   const [isIgnitionPressed, setIsIgnitionPressed] = useState(false);
 
