@@ -114,14 +114,14 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   const rightStatus = getDetectionStatus(sensorData.right);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-2">
-        <div className="w-full max-w-md mx-auto flex flex-col items-center gap-6">
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-4 sm:py-8">
+        <div className="w-full max-w-md mx-auto flex flex-col items-center gap-4 sm:gap-6">
           {/* Blindspot Detection - Car Tail Lights Style */}
           <div className="flex items-center justify-between w-full max-w-xs">
             {/* Left Tail Light */}
-            <div className="flex flex-col items-center gap-2">
-              <div className={`w-16 h-20 rounded-lg border-2 transition-all duration-300 relative overflow-hidden ${
+            <div className="flex flex-col items-center gap-1.5">
+              <div className={`w-12 h-16 sm:w-16 sm:h-20 rounded-lg border-2 transition-all duration-300 relative overflow-hidden ${
                 leftStatus === 'detected' 
                   ? 'bg-destructive/90 border-destructive shadow-[0_0_20px_rgba(239,68,68,0.6)]' 
                   : 'bg-muted/30 border-border'
@@ -144,8 +144,8 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
             </div>
 
             {/* Right Tail Light */}
-            <div className="flex flex-col items-center gap-2">
-              <div className={`w-16 h-20 rounded-lg border-2 transition-all duration-300 relative overflow-hidden ${
+            <div className="flex flex-col items-center gap-1.5">
+              <div className={`w-12 h-16 sm:w-16 sm:h-20 rounded-lg border-2 transition-all duration-300 relative overflow-hidden ${
                 rightStatus === 'detected' 
                   ? 'bg-destructive/90 border-destructive shadow-[0_0_20px_rgba(239,68,68,0.6)]' 
                   : 'bg-muted/30 border-border'
@@ -169,19 +169,19 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
           </div>
 
           {/* Main Control Buttons - All Equal Size */}
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2.5 sm:gap-3">
             {/* Starter Button */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={handleStarterToggle}
-                  className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
+                  className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
                     starterOn
                       ? 'bg-gradient-primary scale-95'
                       : 'bg-card border-2 border-border hover:border-primary/50'
                   }`}
                 >
-                  <Key className={`h-10 w-10 transition-all ${
+                  <Key className={`h-8 w-8 sm:h-10 sm:w-10 transition-all ${
                     starterOn ? 'text-primary-foreground' : 'text-muted-foreground'
                   }`} />
                 </button>
@@ -201,7 +201,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
                     onTouchStart={handleIgnitionPress}
                     onTouchEnd={handleIgnitionRelease}
                     disabled={!starterOn}
-                    className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control ${
+                    className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control ${
                       !starterOn
                         ? 'bg-muted/50 border-2 border-border/50 cursor-not-allowed opacity-50'
                         : isIgnitionPressed || ignitionOn
@@ -209,7 +209,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
                         : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-glow'
                     }`}
                   >
-                    <Power className={`h-10 w-10 transition-all ${
+                    <Power className={`h-8 w-8 sm:h-10 sm:w-10 transition-all ${
                       !starterOn ? 'text-muted-foreground/50' : isIgnitionPressed || ignitionOn ? 'text-primary-foreground' : 'text-muted-foreground'
                     }`} />
                   </button>
@@ -224,13 +224,13 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
               <TooltipTrigger asChild>
                 <button
                   onClick={handleAcToggle}
-                  className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
+                  className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
                     acOn
                       ? 'bg-gradient-primary scale-95'
                       : 'bg-card border-2 border-border hover:border-primary/50'
                   }`}
                 >
-                  <Wind className={`h-10 w-10 transition-all ${
+                  <Wind className={`h-8 w-8 sm:h-10 sm:w-10 transition-all ${
                     acOn ? 'text-primary-foreground' : 'text-muted-foreground'
                   }`} />
                 </button>
@@ -245,9 +245,9 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
               <TooltipTrigger asChild>
                 <button
                   onClick={onCameraClick}
-                  className="w-32 h-32 rounded-full bg-card border-2 border-border hover:border-primary/50 transition-all shadow-control hover:shadow-glow flex items-center justify-center group"
+                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-card border-2 border-border hover:border-primary/50 transition-all shadow-control hover:shadow-glow flex items-center justify-center group"
                 >
-                  <Video className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-all" />
+                  <Video className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground group-hover:text-primary transition-all" />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
@@ -259,7 +259,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
       </div>
 
       {/* Status Text */}
-      <div className="pb-2 text-center space-y-1">
+      <div className="pb-3 sm:pb-2 text-center space-y-1">
         <p className="text-xs text-muted-foreground">
           {ignitionOn ? "Engine Running" : starterOn ? "Starter Enabled" : "System Locked"}
         </p>
@@ -271,9 +271,9 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
       </div>
 
       {/* Footer */}
-      <footer className="py-2 border-t border-border/50 flex-shrink-0">
+      <footer className="py-3 sm:py-2 border-t border-border/50 flex-shrink-0">
         <div className="container mx-auto px-4">
-          <p className="text-[10px] text-center text-muted-foreground">
+          <p className="text-[10px] sm:text-xs text-center text-muted-foreground">
             VehiCtrl System v1.0 • All Rights Reserved
           </p>
         </div>
