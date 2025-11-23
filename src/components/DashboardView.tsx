@@ -170,27 +170,6 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
 
           {/* Main Control Buttons - All Equal Size */}
           <div className="flex flex-col items-center gap-2.5 sm:gap-3">
-            {/* Starter Button */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={handleStarterToggle}
-                  className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
-                    starterOn
-                      ? 'bg-gradient-primary scale-95'
-                      : 'bg-card border-2 border-border hover:border-primary/50'
-                  }`}
-                >
-                  <Key className={`h-8 w-8 sm:h-10 sm:w-10 transition-all ${
-                    starterOn ? 'text-primary-foreground' : 'text-muted-foreground'
-                  }`} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Enable starter system</p>
-              </TooltipContent>
-            </Tooltip>
-
             {/* Ignition Button */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -219,24 +198,48 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
               </TooltipContent>
             </Tooltip>
 
+            {/* Starter Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleStarterToggle}
+                  className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
+                    starterOn
+                      ? 'bg-gradient-primary scale-95'
+                      : 'bg-card border-2 border-border hover:border-primary/50'
+                  }`}
+                >
+                  <Key className={`h-8 w-8 sm:h-10 sm:w-10 transition-all ${
+                    starterOn ? 'text-primary-foreground' : 'text-muted-foreground'
+                  }`} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Enable starter system</p>
+              </TooltipContent>
+            </Tooltip>
+
             {/* AC Button */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={handleAcToggle}
-                  className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
-                    acOn
+                  disabled={!ignitionOn && !starterOn}
+                  className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control ${
+                    !ignitionOn && !starterOn
+                      ? 'bg-muted/50 border-2 border-border/50 cursor-not-allowed opacity-50'
+                      : acOn
                       ? 'bg-gradient-primary scale-95'
-                      : 'bg-card border-2 border-border hover:border-primary/50'
+                      : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-glow'
                   }`}
                 >
                   <Wind className={`h-8 w-8 sm:h-10 sm:w-10 transition-all ${
-                    acOn ? 'text-primary-foreground' : 'text-muted-foreground'
+                    !ignitionOn && !starterOn ? 'text-muted-foreground/50' : acOn ? 'text-primary-foreground' : 'text-muted-foreground'
                   }`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Toggle AC on/off</p>
+                <p>{!ignitionOn && !starterOn ? 'Enable starter or ignition first' : 'Toggle AC on/off'}</p>
               </TooltipContent>
             </Tooltip>
 
