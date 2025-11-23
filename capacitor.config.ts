@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'VehiCtrl',
   webDir: 'dist', // This matches Vite's output folder
   server: {
-    androidScheme: 'https'
+    androidScheme: 'http',
+    cleartext: true
   }
 };
 
