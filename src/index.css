@@ -70,3 +70,10 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+body {
+  @apply bg-background text-foreground;
+  /* Add this to push content below the notch */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
