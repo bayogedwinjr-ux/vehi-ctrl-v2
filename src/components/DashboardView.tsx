@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Power, Wind, Video } from "lucide-react";
+import { Power, Wind, Video, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -19,6 +19,7 @@ interface DashboardViewProps {
 
 export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewProps) => {
   const [ignitionOn, setIgnitionOn] = useState(false);
+  const [starterOn, setStarterOn] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>({ left: null, right: null });
   const [isIgnitionPressed, setIsIgnitionPressed] = useState(false);
 
@@ -47,6 +48,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   }, []);
 
   const handleIgnitionPress = async () => {
+    if (!starterOn) return; // Can't use ignition without starter
     setIsIgnitionPressed(true);
     try {
       const response = await fetch(`http://${RASPBERRY_PI_IP}/control?ignition=1`);
@@ -72,6 +74,20 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
     } catch (error) {
       toast.error("Failed to control ignition");
       console.error('Ignition control error:', error);
+    }
+  };
+
+  const handleStarterToggle = async () => {
+    const newStarterState = !starterOn;
+    try {
+      const response = await fetch(`http://${RASPBERRY_PI_IP}/control?starter=${newStarterState ? 1 : 0}`);
+      if (response.ok) {
+        setStarterOn(newStarterState);
+        toast.success(newStarterState ? "Starter enabled" : "Starter disabled");
+      }
+    } catch (error) {
+      toast.error("Failed to control starter");
+      console.error('Starter control error:', error);
     }
   };
 
@@ -154,6 +170,27 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
 
           {/* Main Control Buttons - All Equal Size */}
           <div className="flex flex-col items-center gap-3">
+            {/* Starter Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleStarterToggle}
+                  className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
+                    starterOn
+                      ? 'bg-gradient-primary scale-95'
+                      : 'bg-card border-2 border-border hover:border-primary/50'
+                  }`}
+                >
+                  <Key className={`h-10 w-10 transition-all ${
+                    starterOn ? 'text-primary-foreground' : 'text-muted-foreground'
+                  }`} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Enable starter system</p>
+              </TooltipContent>
+            </Tooltip>
+
             {/* Ignition Button */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -163,19 +200,22 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
                     onMouseLeave={handleIgnitionRelease}
                     onTouchStart={handleIgnitionPress}
                     onTouchEnd={handleIgnitionRelease}
-                    className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
-                      isIgnitionPressed || ignitionOn
+                    disabled={!starterOn}
+                    className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control ${
+                      !starterOn
+                        ? 'bg-muted/50 border-2 border-border/50 cursor-not-allowed opacity-50'
+                        : isIgnitionPressed || ignitionOn
                         ? 'bg-gradient-primary scale-95'
-                        : 'bg-card border-2 border-border hover:border-primary/50'
+                        : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-glow'
                     }`}
                   >
                     <Power className={`h-10 w-10 transition-all ${
-                      isIgnitionPressed || ignitionOn ? 'text-primary-foreground' : 'text-muted-foreground'
+                      !starterOn ? 'text-muted-foreground/50' : isIgnitionPressed || ignitionOn ? 'text-primary-foreground' : 'text-muted-foreground'
                     }`} />
                   </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Hold to start ignition</p>
+                <p>{starterOn ? 'Hold to start ignition' : 'Enable starter first'}</p>
               </TooltipContent>
             </Tooltip>
 
@@ -221,7 +261,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
       {/* Status Text */}
       <div className="pb-2 text-center space-y-1">
         <p className="text-xs text-muted-foreground">
-          {ignitionOn ? "Engine Running" : "Engine Stopped"}
+          {ignitionOn ? "Engine Running" : starterOn ? "Starter Enabled" : "System Locked"}
         </p>
         {(leftStatus === 'detected' || rightStatus === 'detected') && (
           <p className="text-xs text-destructive font-medium animate-pulse">
