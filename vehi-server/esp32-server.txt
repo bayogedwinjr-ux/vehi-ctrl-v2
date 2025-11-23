@@ -1,0 +1,228 @@
+#include <WiFi.h>
+#include <WebServer.h>
+#include <ArduinoJson.h> // Install "ArduinoJson" via Library Manager if missing
+
+// ======================================================
+// CONFIGURATION
+// ======================================================
+
+// --- Wi-Fi Credentials ---
+const char* WIFI_SSID = "HUAWEI-E5330-4D63";
+const char* WIFI_PASSWORD = "brdhb5am"; 
+
+// --- Network Configuration (Static IP) ---
+IPAddress local_IP(192, 168, 8, 220);
+IPAddress gateway(192, 168, 8, 1);
+IPAddress subnet(255, 255, 255, 0);
+IPAddress primaryDNS(8, 8, 8, 8);   // Optional
+IPAddress secondaryDNS(8, 8, 4, 4); // Optional
+
+// --- Pin Mapping (Change these to match your wiring) ---
+// Using standard GPIOs safe for output on most ESP32 boards
+#define IGNITION_PIN 26
+#define STARTER_PIN 27
+#define COMPRESSOR_PIN 25
+#define FAN_PIN 33
+
+// --- Relay Logic Configuration ---
+// Most 5V Relay Modules are Active LOW (LOW = ON, HIGH = OFF)
+#define RELAY_ON LOW
+#define RELAY_OFF HIGH
+
+// ======================================================
+// GLOBALS
+// ======================================================
+
+WebServer server(80);
+
+// Current States (for reporting back)
+bool ignitionState = false;
+bool starterState = false;
+bool acState = false; // Tracks logical AC state (affects both fan & compressor)
+
+// ======================================================
+// HELPER FUNCTIONS
+// ======================================================
+
+void setRelay(int pin, bool turnOn) {
+  if (turnOn) {
+    digitalWrite(pin, RELAY_ON);
+  } else {
+    digitalWrite(pin, RELAY_OFF);
+  }
+}
+
+void addCorsHeaders() {
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+// ======================================================
+// REQUEST HANDLERS
+// ======================================================
+
+void handleRoot() {
+  addCorsHeaders();
+  
+  StaticJsonDocument<200> doc;
+  doc["message"] = "VehiCtrl ESP32 Server is Running";
+  doc["config"]["ignition_pin"] = IGNITION_PIN;
+  doc["config"]["starter_pin"] = STARTER_PIN;
+  doc["config"]["compressor_pin"] = COMPRESSOR_PIN;
+  doc["config"]["fan_pin"] = FAN_PIN;
+  doc["status"]["ignition"] = ignitionState ? "ON" : "OFF";
+  doc["status"]["starter"] = starterState ? "ON" : "OFF";
+  doc["status"]["ac"] = acState ? "ON" : "OFF";
+
+  String response;
+  serializeJson(doc, response);
+  server.send(200, "application/json", response);
+}
+
+void handleControl() {
+  addCorsHeaders();
+
+  // Handle CORS preflight request
+  if (server.method() == HTTP_OPTIONS) {
+    server.send(204);
+    return;
+  }
+
+  bool stateChanged = false;
+  StaticJsonDocument<200> responseDoc;
+  responseDoc["status"] = "success";
+
+  // --- 1. Handle Ignition Command ---
+  if (server.hasArg("ignition")) {
+    int val = server.arg("ignition").toInt();
+    if (val == 1) {
+      ignitionState = true;
+      setRelay(IGNITION_PIN, true);
+      responseDoc["ignition"] = "ON";
+    } else {
+      ignitionState = false;
+      setRelay(IGNITION_PIN, false);
+      responseDoc["ignition"] = "OFF";
+    }
+    stateChanged = true;
+  }
+
+  // --- 2. Handle Starter Command ---
+  if (server.hasArg("starter")) {
+    int val = server.arg("starter").toInt();
+    if (val == 1) {
+      starterState = true;
+      setRelay(STARTER_PIN, true);
+      responseDoc["starter"] = "ON";
+    } else {
+      starterState = false;
+      setRelay(STARTER_PIN, false);
+      responseDoc["starter"] = "OFF";
+    }
+    stateChanged = true;
+  }
+
+  // --- 3. Handle AC Command (Controls Compressor + Fan) ---
+  if (server.hasArg("ac")) {
+    int val = server.arg("ac").toInt();
+    if (val == 1) {
+      acState = true;
+      setRelay(COMPRESSOR_PIN, true);
+      setRelay(FAN_PIN, true);
+      responseDoc["ac_compressor"] = "ON";
+      responseDoc["ac_fan"] = "ON";
+    } else {
+      acState = false;
+      setRelay(COMPRESSOR_PIN, false);
+      setRelay(FAN_PIN, false);
+      responseDoc["ac_compressor"] = "OFF";
+      responseDoc["ac_fan"] = "OFF";
+    }
+    stateChanged = true;
+  }
+
+  if (!stateChanged) {
+    // If no valid arguments were provided
+    // server.send(400, "application/json", "{\"error\":\"No valid command provided\"}");
+    // However, returning current state is often safer than error
+  }
+
+  String response;
+  serializeJson(responseDoc, response);
+  server.send(200, "application/json", response);
+}
+
+void handleNotFound() {
+  addCorsHeaders();
+  if (server.method() == HTTP_OPTIONS) {
+    server.send(204);
+  } else {
+    server.send(404, "text/plain", "Not found");
+  }
+}
+
+// ======================================================
+// SETUP & LOOP
+// ======================================================
+
+void setup() {
+  Serial.begin(115200);
+  
+  // 1. Initialize Pins (Set to OFF immediately)
+  pinMode(IGNITION_PIN, OUTPUT);
+  digitalWrite(IGNITION_PIN, RELAY_OFF);
+  
+  pinMode(STARTER_PIN, OUTPUT);
+  digitalWrite(STARTER_PIN, RELAY_OFF);
+  
+  pinMode(COMPRESSOR_PIN, OUTPUT);
+  digitalWrite(COMPRESSOR_PIN, RELAY_OFF);
+  
+  pinMode(FAN_PIN, OUTPUT);
+  digitalWrite(FAN_PIN, RELAY_OFF);
+
+  Serial.println("Pins initialized (Active Low logic).");
+
+  // 2. Configure Static IP
+  if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
+    Serial.println("STA Failed to configure");
+  }
+
+  // 3. Connect to Wi-Fi
+  Serial.print("Connecting to ");
+  Serial.println(WIFI_SSID);
+  
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  
+  // Wait for connection
+  int retryCount = 0;
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    retryCount++;
+    if(retryCount > 20) { // if logic to handle connection failure or retry
+       Serial.println("\nRetrying WiFi connection...");
+       // Optional: WiFi.reconnect(); 
+    }
+  }
+  
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // 4. Setup Web Server Routes
+  server.on("/", HTTP_GET, handleRoot);
+  server.on("/control", HTTP_GET, handleControl); // Supports GET like ?ignition=1
+  server.on("/control", HTTP_POST, handleControl); // Supports POST if needed
+  server.onNotFound(handleNotFound);
+  
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop() {
+  server.handleClient();
+  delay(2); // Small delay to allow CPU to handle WiFi stack
+}
