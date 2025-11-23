@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Power, Wind, Video } from "lucide-react";
+import { Power, Wind, Video, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -181,7 +181,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
                       : 'bg-card border-2 border-border hover:border-primary/50'
                   }`}
                 >
-                  <Power className={`h-10 w-10 transition-all ${
+                  <Key className={`h-10 w-10 transition-all ${
                     starterOn ? 'text-primary-foreground' : 'text-muted-foreground'
                   }`} />
                 </button>
