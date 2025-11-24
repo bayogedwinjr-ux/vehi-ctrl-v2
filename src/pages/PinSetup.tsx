@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -74,19 +75,26 @@ export const PinSetup = ({ onComplete }: PinSetupProps) => {
                   }
                 }}
                 onComplete={handlePinComplete}
-              >
-                <InputOTPGroup>
-                  {[0, 1, 2, 3, 4, 5].map((index) => (
-                    <InputOTPSlot
-                      key={index}
-                      index={index}
-                      className="w-12 h-14 text-2xl"
-                    >
-                      {showPin ? currentValue[index] : (currentValue[index] ? "●" : "")}
-                    </InputOTPSlot>
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
+                render={({ slots }) => (
+                  <InputOTPGroup>
+                    {slots.map((slot, index) => (
+                      <InputOTPSlot
+                        key={index}
+                        index={index}
+                        className="w-12 h-14 text-2xl"
+                        style={!showPin && slot.char ? {
+                          color: 'transparent',
+                          caretColor: 'var(--foreground)',
+                          textShadow: '0 0 0 var(--foreground)',
+                          WebkitTextSecurity: 'disc',
+                        } as React.CSSProperties : undefined}
+                      >
+                        {!showPin && slot.char ? '●' : slot.char}
+                      </InputOTPSlot>
+                    ))}
+                  </InputOTPGroup>
+                )}
+              />
 
               <Button
                 variant="ghost"
