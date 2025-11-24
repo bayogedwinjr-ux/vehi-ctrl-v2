@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
 
 interface LayoutProps {
@@ -10,6 +11,8 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children, showBackButton, onBackClick }: LayoutProps) => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Header */}
@@ -26,8 +29,8 @@ export const Layout = ({ children, showBackButton, onBackClick }: LayoutProps) =
             </Button>
           ) : (
             <div className="flex items-center gap-2">
-              <img src={logo} alt="VehiCtrl" className="w-7 h-7 object-contain" />
-              <h1 className="text-lg font-bold tracking-tight">VehiCtrl</h1>
+              <img src={logo} alt="TechnoDrive" className="w-7 h-7 object-contain" />
+              <h1 className="text-lg font-bold tracking-tight">TechnoDrive</h1>
             </div>
           )}
           
@@ -36,6 +39,7 @@ export const Layout = ({ children, showBackButton, onBackClick }: LayoutProps) =
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => navigate('/profile')}
               className="transition-all hover:bg-primary/10 hover:text-primary"
             >
               <User className="h-5 w-5" />
@@ -43,6 +47,7 @@ export const Layout = ({ children, showBackButton, onBackClick }: LayoutProps) =
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => navigate('/settings')}
               className="transition-all hover:bg-primary/10 hover:text-primary"
             >
               <Settings className="h-5 w-5" />

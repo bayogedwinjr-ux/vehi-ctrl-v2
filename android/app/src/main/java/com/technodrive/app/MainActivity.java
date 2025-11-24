@@ -1,4 +1,4 @@
-package com.vehictrl.app;
+package com.technodrive.app;
 
 import com.getcapacitor.BridgeActivity;
 
