@@ -28,10 +28,13 @@ export const Layout = ({ children, showBackButton, onBackClick }: LayoutProps) =
               ← Back
             </Button>
           ) : (
-            <div className="flex items-center gap-2">
+            <button 
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
               <img src={logo} alt="TechnoDrive" className="w-7 h-7 object-contain" />
               <h1 className="text-lg font-bold tracking-tight">TechnoDrive</h1>
-            </div>
+            </button>
           )}
           
           {/* Profile & Settings */}
