@@ -278,7 +278,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
       <footer className="py-3 sm:py-2 border-t border-border/50 flex-shrink-0">
         <div className="container mx-auto px-4">
           <p className="text-[10px] sm:text-xs text-center text-muted-foreground">
-            VehiCtrl System v1.0 • All Rights Reserved
+            TechnoDrive System v1.0 • All Rights Reserved
           </p>
         </div>
       </footer>
