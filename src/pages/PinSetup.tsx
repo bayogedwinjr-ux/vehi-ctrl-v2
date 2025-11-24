@@ -63,30 +63,29 @@ export const PinSetup = ({ onComplete }: PinSetupProps) => {
         <Card className="p-6 space-y-6">
           <div className="space-y-4">
             <div className="flex flex-col items-center gap-4">
-              <div className={showPin ? "" : "pin-masked"}>
-                <InputOTP
-                  maxLength={6}
-                  value={currentValue}
-                  onChange={(value) => {
-                    if (step === "create") {
-                      setPin(value);
-                    } else {
-                      setConfirmPin(value);
-                    }
-                  }}
-                  onComplete={handlePinComplete}
-                >
-                  <InputOTPGroup>
-                    {[0, 1, 2, 3, 4, 5].map((index) => (
-                      <InputOTPSlot
-                        key={index}
-                        index={index}
-                        className="w-12 h-14 text-2xl"
-                      />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
+              <InputOTP
+                maxLength={6}
+                value={currentValue}
+                onChange={(value) => {
+                  if (step === "create") {
+                    setPin(value);
+                  } else {
+                    setConfirmPin(value);
+                  }
+                }}
+                onComplete={handlePinComplete}
+              >
+                <InputOTPGroup>
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="w-12 h-14 text-2xl"
+                      masked={!showPin}
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
 
               <Button
                 variant="ghost"
