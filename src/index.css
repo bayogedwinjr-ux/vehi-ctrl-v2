@@ -71,4 +71,10 @@ All colors MUST be HSL.
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
   }
+
+  /* PIN masking */
+  .pin-masked input {
+    -webkit-text-security: disc;
+    text-security: disc;
+  }
 }
