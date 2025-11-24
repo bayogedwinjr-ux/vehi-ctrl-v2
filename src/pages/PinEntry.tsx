@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Lock, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 interface PinEntryProps {
@@ -14,6 +14,7 @@ interface PinEntryProps {
 export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
   const [pin, setPin] = useState("");
   const [attempts, setAttempts] = useState(0);
+  const [showPin, setShowPin] = useState(false);
 
   const handlePinComplete = (value: string) => {
     if (value === storedPin) {
@@ -72,10 +73,31 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
                     key={index}
                     index={index}
                     className="w-12 h-14 text-2xl"
+                    masked={!showPin}
                   />
                 ))}
               </InputOTPGroup>
             </InputOTP>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPin(!showPin)}
+              className="text-muted-foreground"
+              disabled={isLocked}
+            >
+              {showPin ? (
+                <>
+                  <EyeOff className="mr-2 h-4 w-4" />
+                  Hide PIN
+                </>
+              ) : (
+                <>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Show PIN
+                </>
+              )}
+            </Button>
 
             {isLocked && (
               <p className="text-sm text-destructive text-center">
