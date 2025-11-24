@@ -81,7 +81,9 @@ export const PinSetup = ({ onComplete }: PinSetupProps) => {
                       key={index}
                       index={index}
                       className="w-12 h-14 text-2xl"
-                    />
+                    >
+                      {showPin ? currentValue[index] : (currentValue[index] ? "●" : "")}
+                    </InputOTPSlot>
                   ))}
                 </InputOTPGroup>
               </InputOTP>
@@ -106,11 +108,6 @@ export const PinSetup = ({ onComplete }: PinSetupProps) => {
               </Button>
             </div>
 
-            {showPin && currentValue && (
-              <p className="text-center text-sm text-muted-foreground font-mono">
-                {currentValue || "------"}
-              </p>
-            )}
           </div>
 
           {step === "confirm" && (
