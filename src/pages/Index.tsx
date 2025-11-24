@@ -35,7 +35,6 @@ const Index = () => {
   // Handle registration completion
   const handleRegistrationComplete = (data: UserData) => {
     setUserData(data);
-    setAppState(prev => ({ ...prev, hasCompletedOnboarding: true }));
     setOnboardingStep("pinSetup");
   };
 
