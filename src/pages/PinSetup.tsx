@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -64,37 +63,30 @@ export const PinSetup = ({ onComplete }: PinSetupProps) => {
         <Card className="p-6 space-y-6">
           <div className="space-y-4">
             <div className="flex flex-col items-center gap-4">
-              <InputOTP
-                maxLength={6}
-                value={currentValue}
-                onChange={(value) => {
-                  if (step === "create") {
-                    setPin(value);
-                  } else {
-                    setConfirmPin(value);
-                  }
-                }}
-                onComplete={handlePinComplete}
-                render={({ slots }) => (
+              <div className={showPin ? "" : "pin-masked"}>
+                <InputOTP
+                  maxLength={6}
+                  value={currentValue}
+                  onChange={(value) => {
+                    if (step === "create") {
+                      setPin(value);
+                    } else {
+                      setConfirmPin(value);
+                    }
+                  }}
+                  onComplete={handlePinComplete}
+                >
                   <InputOTPGroup>
-                    {slots.map((slot, index) => (
+                    {[0, 1, 2, 3, 4, 5].map((index) => (
                       <InputOTPSlot
                         key={index}
                         index={index}
                         className="w-12 h-14 text-2xl"
-                        style={!showPin && slot.char ? {
-                          color: 'transparent',
-                          caretColor: 'var(--foreground)',
-                          textShadow: '0 0 0 var(--foreground)',
-                          WebkitTextSecurity: 'disc',
-                        } as React.CSSProperties : undefined}
-                      >
-                        {!showPin && slot.char ? '●' : slot.char}
-                      </InputOTPSlot>
+                      />
                     ))}
                   </InputOTPGroup>
-                )}
-              />
+                </InputOTP>
+              </div>
 
               <Button
                 variant="ghost"
