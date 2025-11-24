@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const RASPBERRY_PI_IP = "192.168.8.101";
+const ESP32_IP1 = "192.168.8.220";
+const ESP32_IP2 = "192.168.8.221";
 
 interface SensorData {
   left: number | null;
@@ -51,7 +52,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
     if (!starterOn) return; // Can't use ignition without starter
     setIsIgnitionPressed(true);
     try {
-      const response = await fetch(`http://${RASPBERRY_PI_IP}/control?ignition=1`);
+      const response = await fetch(`http://${ESP32_IP1}/control?ignition=1`);
       if (response.ok) {
         setIgnitionOn(true);
         toast.success("Ignition started");
@@ -66,7 +67,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
     if (!isIgnitionPressed) return; // Only release if button was pressed
     setIsIgnitionPressed(false);
     try {
-      const response = await fetch(`http://${RASPBERRY_PI_IP}/control?ignition=0`);
+      const response = await fetch(`http://${ESP32_IP1}/control?ignition=0`);
       if (response.ok) {
         setIgnitionOn(false);
         toast.success("Ignition turned off");
@@ -80,7 +81,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   const handleStarterToggle = async () => {
     const newStarterState = !starterOn;
     try {
-      const response = await fetch(`http://${RASPBERRY_PI_IP}/control?starter=${newStarterState ? 1 : 0}`);
+      const response = await fetch(`http://${ESP32_IP1}/control?starter=${newStarterState ? 1 : 0}`);
       if (response.ok) {
         setStarterOn(newStarterState);
         toast.success(newStarterState ? "Starter enabled" : "Starter disabled");
@@ -94,7 +95,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   const handleAcToggle = async () => {
     const newAcState = !acOn;
     try {
-      const response = await fetch(`http://${RASPBERRY_PI_IP}/control?ac=${newAcState ? 1 : 0}`);
+      const response = await fetch(`http://${ESP32_IP2}/control?ac=${newAcState ? 1 : 0}`);
       if (response.ok) {
         setAcOn(newAcState);
         toast.success(newAcState ? "AC turned on" : "AC turned off");
