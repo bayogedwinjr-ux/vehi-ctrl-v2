@@ -27,10 +27,10 @@ interface DashboardViewProps {
 }
 
 export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewProps) => {
-  const [ignitionOn, setIgnitionOn] = useState(false);
   const [starterOn, setStarterOn] = useState(false);
+  const [ignitionOn, setIgnitionOn] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>({ left: null, right: null });
-  const [isIgnitionPressed, setIsIgnitionPressed] = useState(false);
+  const [isStarterPressed, setIsStarterPressed] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
   // Check if this is first dashboard visit
@@ -66,47 +66,47 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
     return () => clearInterval(interval);
   }, []);
 
-  const handleIgnitionPress = async () => {
-    if (!starterOn) return; // Can't use ignition without starter
-    setIsIgnitionPressed(true);
+  const handleStarterPress = async () => {
+    if (!ignitionOn) return; // Can't use starter without ignition
+    setIsStarterPressed(true);
     try {
-      const response = await fetch(`http://${ESP32_IP1}/control?ignition=1`);
+      const response = await fetch(`http://${ESP32_IP1}/control?starter=1`);
       if (response.ok) {
-        setIgnitionOn(true);
-        toast.success("Ignition started");
-      }
-    } catch (error) {
-      toast.error("Failed to control ignition");
-      console.error('Ignition control error:', error);
-    }
-  };
-
-  const handleIgnitionRelease = async () => {
-    if (!isIgnitionPressed) return; // Only release if button was pressed
-    setIsIgnitionPressed(false);
-    try {
-      const response = await fetch(`http://${ESP32_IP1}/control?ignition=0`);
-      if (response.ok) {
-        setIgnitionOn(false);
-        toast.success("Ignition turned off");
-      }
-    } catch (error) {
-      toast.error("Failed to control ignition");
-      console.error('Ignition control error:', error);
-    }
-  };
-
-  const handleStarterToggle = async () => {
-    const newStarterState = !starterOn;
-    try {
-      const response = await fetch(`http://${ESP32_IP1}/control?starter=${newStarterState ? 1 : 0}`);
-      if (response.ok) {
-        setStarterOn(newStarterState);
-        toast.success(newStarterState ? "Starter enabled" : "Starter disabled");
+        setStarterOn(true);
+        toast.success("Starter engaged");
       }
     } catch (error) {
       toast.error("Failed to control starter");
       console.error('Starter control error:', error);
+    }
+  };
+
+  const handleStarterRelease = async () => {
+    if (!isStarterPressed) return; // Only release if button was pressed
+    setIsStarterPressed(false);
+    try {
+      const response = await fetch(`http://${ESP32_IP1}/control?starter=0`);
+      if (response.ok) {
+        setStarterOn(false);
+        toast.success("Starter released");
+      }
+    } catch (error) {
+      toast.error("Failed to control starter");
+      console.error('Starter control error:', error);
+    }
+  };
+
+  const handleIgnitionToggle = async () => {
+    const newIgnitionState = !ignitionOn;
+    try {
+      const response = await fetch(`http://${ESP32_IP1}/control?ignition=${newIgnitionState ? 1 : 0}`);
+      if (response.ok) {
+        setIgnitionOn(newIgnitionState);
+        toast.success(newIgnitionState ? "Ignition enabled" : "Ignition disabled");
+      }
+    } catch (error) {
+      toast.error("Failed to control ignition");
+      console.error('Ignition control error:', error);
     }
   };
 
@@ -151,8 +151,8 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
               <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm text-left">
                 <p className="font-semibold text-foreground">Quick Guide:</p>
                 <ul className="space-y-1.5 text-muted-foreground">
-                  <li>• <span className="text-foreground">Starter</span> - Enable to unlock ignition</li>
-                  <li>• <span className="text-foreground">Ignition</span> - Hold to start the engine</li>
+                  <li>• <span className="text-foreground">Ignition</span> - Enable electrical system</li>
+                  <li>• <span className="text-foreground">Starter</span> - Hold to crank the engine</li>
                   <li>• <span className="text-foreground">AC</span> - Control climate system</li>
                   <li>• <span className="text-foreground">Camera</span> - View 360° surroundings</li>
                   <li>• <span className="text-foreground">Blindspot</span> - Red tail lights alert you</li>
@@ -227,52 +227,52 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
 
           {/* Main Control Buttons - All Equal Size */}
           <div className="flex flex-col items-center gap-2.5 sm:gap-3">
-            {/* Ignition Button */}
+            {/* Starter Button */}
             <Tooltip>
               <TooltipTrigger asChild>
                   <button
-                    onMouseDown={handleIgnitionPress}
-                    onMouseUp={handleIgnitionRelease}
-                    onMouseLeave={handleIgnitionRelease}
-                    onTouchStart={handleIgnitionPress}
-                    onTouchEnd={handleIgnitionRelease}
-                    disabled={!starterOn}
+                    onMouseDown={handleStarterPress}
+                    onMouseUp={handleStarterRelease}
+                    onMouseLeave={handleStarterRelease}
+                    onTouchStart={handleStarterPress}
+                    onTouchEnd={handleStarterRelease}
+                    disabled={!ignitionOn}
                     className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control ${
-                      !starterOn
+                      !ignitionOn
                         ? 'bg-muted/50 border-2 border-border/50 cursor-not-allowed opacity-50'
-                        : isIgnitionPressed || ignitionOn
+                        : isStarterPressed || starterOn
                         ? 'bg-gradient-primary scale-95'
                         : 'bg-card border-2 border-border hover:border-primary/50 hover:shadow-glow'
                     }`}
                   >
                     <Power className={`h-8 w-8 sm:h-10 sm:w-10 transition-all ${
-                      !starterOn ? 'text-muted-foreground/50' : isIgnitionPressed || ignitionOn ? 'text-primary-foreground' : 'text-muted-foreground'
+                      !ignitionOn ? 'text-muted-foreground/50' : isStarterPressed || starterOn ? 'text-primary-foreground' : 'text-muted-foreground'
                     }`} />
                   </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{starterOn ? 'Hold to start ignition' : 'Enable ignition first'}</p>
+                <p>{ignitionOn ? 'Hold to crank engine' : 'Enable ignition first'}</p>
               </TooltipContent>
             </Tooltip>
 
-            {/* Starter Button */}
+            {/* Ignition Button */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={handleStarterToggle}
+                  onClick={handleIgnitionToggle}
                   className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-control hover:shadow-glow ${
-                    starterOn
+                    ignitionOn
                       ? 'bg-gradient-primary scale-95'
                       : 'bg-card border-2 border-border hover:border-primary/50'
                   }`}
                 >
                   <Key className={`h-8 w-8 sm:h-10 sm:w-10 transition-all ${
-                    starterOn ? 'text-primary-foreground' : 'text-muted-foreground'
+                    ignitionOn ? 'text-primary-foreground' : 'text-muted-foreground'
                   }`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Enable ignition system</p>
+                <p>Toggle ignition system</p>
               </TooltipContent>
             </Tooltip>
 
@@ -296,7 +296,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{!ignitionOn && !starterOn ? 'Enable starter or ignition first' : 'Toggle AC on/off'}</p>
+                <p>{!ignitionOn && !starterOn ? 'Enable ignition or starter first' : 'Toggle AC on/off'}</p>
               </TooltipContent>
             </Tooltip>
 
@@ -321,7 +321,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
       {/* Status Text */}
       <div className="pb-3 sm:pb-2 text-center space-y-1">
         <p className="text-xs text-muted-foreground">
-          {ignitionOn ? "Engine Running" : starterOn ? "Starter Enabled" : "System Locked"}
+          {starterOn ? "Engine Running" : ignitionOn ? "Ignition Enabled" : "System Locked"}
         </p>
         {(leftStatus === 'detected' || rightStatus === 'detected') && (
           <p className="text-xs text-destructive font-medium animate-pulse">
