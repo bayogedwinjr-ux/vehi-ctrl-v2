@@ -195,7 +195,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
                   </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{starterOn ? 'Hold to start ignition' : 'Enable starter first'}</p>
+                <p>{starterOn ? 'Hold to start ignition' : 'Enable ignition first'}</p>
               </TooltipContent>
             </Tooltip>
 
@@ -216,7 +216,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Enable starter system</p>
+                <p>Enable ignition system</p>
               </TooltipContent>
             </Tooltip>
 
