@@ -9,8 +9,8 @@ CORS(app)
 
 # --- Configuration ---
 # Use BCM pin numbering
-IGNITION_PIN = 17     # Physical Pin 11
-STARTER_PIN = 23      # Physical Pin 16 (NEW - Starter)
+IGNITION_PIN = 23     # Physical Pin 16 (Ignition - Electrical system)
+STARTER_PIN = 17      # Physical Pin 11 (Starter - Motor that cranks engine)
 COMPRESSOR_PIN = 27   # Physical Pin 13 (AC Compressor)
 FAN_PIN = 22          # Physical Pin 15 (AC Fan)
 
@@ -27,7 +27,7 @@ try:
         # ACTIVE LOW: Set to HIGH initially to keep relays OFF
         GPIO.output(pin, GPIO.HIGH) 
         
-    print(f"GPIO Initialized (Active Low): Ignition={IGNITION_PIN}, Starter={STARTER_PIN}, Compressor={COMPRESSOR_PIN}, Fan={FAN_PIN}")
+    print(f"GPIO Initialized (Active Low): Starter={STARTER_PIN}, Ignition={IGNITION_PIN}, Compressor={COMPRESSOR_PIN}, Fan={FAN_PIN}")
 
 except Exception as e:
     print(f"Error initializing GPIO: {e}")
@@ -37,14 +37,14 @@ except Exception as e:
 def control_vehicle():
     """
     Handles requests like:
-    GET /control?starter=1   -> Sets Starter Relay ON (GPIO LOW)
-    GET /control?ignition=1  -> Sets Ignition Relay ON (GPIO LOW)
+    GET /control?ignition=1  -> Sets Ignition Relay ON (GPIO LOW) - Electrical system
+    GET /control?starter=1   -> Sets Starter Relay ON (GPIO LOW) - Motor that cranks engine
     GET /control?ac=1        -> Sets AC Relays ON (GPIO LOW)
     """
     response_data = {"status": "success"}
     
-    # 1. Handle Starter Command (NEW)
-    starter_cmd = request.args.get('starter')
+    # 1. Handle Ignition Command (Electrical system)
+    ignition_cmd = request.args.get('ignition')
     if starter_cmd is not None:
         try:
             state = int(starter_cmd)
@@ -77,6 +77,23 @@ def control_vehicle():
         except ValueError:
             return jsonify({"error": "Ignition value must be an integer"}), 400
 
+    # 2. Handle Starter Command (Motor that cranks engine)
+    starter_cmd = request.args.get('starter')
+    if starter_cmd is not None:
+        try:
+            state = int(starter_cmd)
+            if state in [0, 1]:
+                # ACTIVE LOW LOGIC: 1 -> LOW (ON), 0 -> HIGH (OFF)
+                gpio_state = GPIO.LOW if state == 1 else GPIO.HIGH
+                GPIO.output(STARTER_PIN, gpio_state)
+                
+                response_data['starter'] = "ON" if state else "OFF"
+                print(f"Starter set to: {response_data['starter']} (GPIO level: {gpio_state})")
+            else:
+                return jsonify({"error": "Invalid starter value. Use 0 or 1"}), 400
+        except ValueError:
+            return jsonify({"error": "Starter value must be an integer"}), 400
+
     # 3. Handle AC Command (Controls both Compressor and Fan)
     ac_cmd = request.args.get('ac')
     if ac_cmd is not None:
@@ -106,8 +123,8 @@ def health_check():
     return jsonify({
         "message": "VehiCtrl Raspberry Pi Server is running (Active Low Config)",
         "config": {
-            "ignition_pin": IGNITION_PIN,
             "starter_pin": STARTER_PIN,
+            "ignition_pin": IGNITION_PIN,
             "compressor_pin": COMPRESSOR_PIN,
             "fan_pin": FAN_PIN,
             "logic": "Active Low (0=ON, 1=OFF)"
