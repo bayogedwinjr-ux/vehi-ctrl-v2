@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { UserData } from "@/types/user";
 import { toast } from "sonner";
 import { LogOut, Save, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +27,7 @@ interface SettingsProps {
 }
 
 export const Settings = ({ userData, onSave, onSignOut }: SettingsProps) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<UserData>(userData);
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Partial<UserData>>({});
@@ -79,7 +81,7 @@ export const Settings = ({ userData, onSave, onSignOut }: SettingsProps) => {
   };
 
   return (
-    <Layout showBackButton onBackClick={() => window.history.back()}>
+    <Layout showBackButton onBackClick={() => navigate("/")}>
       <div className="p-4 max-w-2xl mx-auto space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
