@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, Fingerprint } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { BiometricAuth, BiometryType } from "@aparajita/capacitor-biometric-auth";
 
 interface PinEntryProps {
   storedPin: string;
@@ -15,21 +17,86 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
   const [pin, setPin] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [showPin, setShowPin] = useState(false);
+  const [shakeError, setShakeError] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
 
-  const handlePinComplete = (value: string) => {
+  useEffect(() => {
+    checkBiometricAvailability();
+  }, []);
+
+  const checkBiometricAvailability = async () => {
+    try {
+      const result = await BiometricAuth.checkBiometry();
+      setBiometricAvailable(result.isAvailable && 
+        (result.biometryType === BiometryType.fingerprintAuthentication || 
+         result.biometryType === BiometryType.faceAuthentication));
+      
+      // Auto-trigger biometric on mount if available
+      if (result.isAvailable) {
+        handleBiometricAuth();
+      }
+    } catch (error) {
+      console.log("Biometric not available");
+    }
+  };
+
+  const handleBiometricAuth = async () => {
+    try {
+      await Haptics.impact({ style: ImpactStyle.Light });
+      await BiometricAuth.authenticate({
+        reason: "Authenticate to access TechnoDrive",
+        cancelTitle: "Cancel",
+        iosFallbackTitle: "Use PIN",
+        androidTitle: "Biometric Authentication",
+        androidSubtitle: "Verify your identity",
+      });
+
+      // If we reach here, authentication was successful
+      await Haptics.impact({ style: ImpactStyle.Heavy });
+      toast.success("Authentication successful!");
+      onSuccess();
+    } catch (error) {
+      await Haptics.impact({ style: ImpactStyle.Medium });
+      console.log("Biometric auth failed or cancelled");
+    }
+  };
+
+  const handlePinComplete = async (value: string) => {
     if (value === storedPin) {
+      await Haptics.impact({ style: ImpactStyle.Heavy });
       toast.success("Access granted!");
       onSuccess();
     } else {
+      await Haptics.impact({ style: ImpactStyle.Medium });
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       setPin("");
+      
+      // Trigger shake animation
+      setShakeError(true);
+      setTimeout(() => setShakeError(false), 500);
       
       if (newAttempts >= 3) {
         toast.error("Too many failed attempts. Please wait 30 seconds.");
         setTimeout(() => setAttempts(0), 30000);
       } else {
         toast.error(`Incorrect PIN. ${3 - newAttempts} attempts remaining.`);
+      }
+    }
+  };
+
+  const handleNumPress = async (num: number | string) => {
+    await Haptics.impact({ style: ImpactStyle.Light });
+    
+    if (num === "⌫") {
+      setPin(prev => prev.slice(0, -1));
+    } else if (typeof num === "number") {
+      if (pin.length < 6) {
+        const newPin = pin + num;
+        setPin(newPin);
+        if (newPin.length === 6) {
+          handlePinComplete(newPin);
+        }
       }
     }
   };
@@ -60,24 +127,26 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
           </div>
 
           <div className="flex flex-col items-center gap-4">
-            <InputOTP
-              maxLength={6}
-              value={pin}
-              onChange={setPin}
-              onComplete={handlePinComplete}
-              disabled={isLocked}
-            >
-              <InputOTPGroup>
-                {[0, 1, 2, 3, 4, 5].map((index) => (
-                  <InputOTPSlot
-                    key={index}
-                    index={index}
-                    className="w-12 h-14 text-2xl"
-                    masked={!showPin}
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
+            <div className={shakeError ? "animate-shake" : ""}>
+              <InputOTP
+                maxLength={6}
+                value={pin}
+                onChange={setPin}
+                onComplete={handlePinComplete}
+                disabled={isLocked}
+              >
+                <InputOTPGroup>
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="w-12 h-14 text-2xl"
+                      masked={!showPin}
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
 
             <Button
               variant="ghost"
@@ -99,6 +168,19 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
               )}
             </Button>
 
+            {biometricAvailable && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleBiometricAuth}
+                disabled={isLocked}
+                className="w-full"
+              >
+                <Fingerprint className="mr-2 h-5 w-5" />
+                Use Biometric Authentication
+              </Button>
+            )}
+
             {isLocked && (
               <p className="text-sm text-destructive text-center">
                 Too many failed attempts. Please wait 30 seconds.
@@ -113,19 +195,7 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
                 variant={num === "" ? "ghost" : "outline"}
                 size="lg"
                 disabled={num === "" || isLocked || pin.length >= 6}
-                onClick={() => {
-                  if (num === "⌫") {
-                    setPin(prev => prev.slice(0, -1));
-                  } else if (typeof num === "number") {
-                    if (pin.length < 6) {
-                      const newPin = pin + num;
-                      setPin(newPin);
-                      if (newPin.length === 6) {
-                        handlePinComplete(newPin);
-                      }
-                    }
-                  }
-                }}
+                onClick={() => handleNumPress(num)}
                 className="h-14 text-lg font-semibold"
               >
                 {num}
