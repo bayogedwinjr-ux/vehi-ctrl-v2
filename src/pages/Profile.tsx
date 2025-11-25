@@ -2,14 +2,17 @@ import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { UserData } from "@/types/user";
 import { User, Mail, Phone, Car } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileProps {
   userData: UserData;
 }
 
 export const Profile = ({ userData }: ProfileProps) => {
+  const navigate = useNavigate();
+  
   return (
-    <Layout showBackButton onBackClick={() => window.history.back()}>
+    <Layout showBackButton onBackClick={() => navigate("/")}>
       <div className="p-4 max-w-2xl mx-auto space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Profile</h1>

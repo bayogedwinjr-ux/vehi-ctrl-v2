@@ -25,12 +25,15 @@ const Index = () => {
   // Onboarding flow state
   const [onboardingStep, setOnboardingStep] = useState<"welcome" | "registration" | "pinSetup">("welcome");
 
-  // Lock app on mount if PIN exists - reset unlock state when app opens
+  // Lock app on initial mount only - not on navigation
   useEffect(() => {
-    if (storedPin && appState.hasCompletedOnboarding) {
+    const hasInitialized = sessionStorage.getItem('appInitialized');
+    
+    if (!hasInitialized && storedPin && appState.hasCompletedOnboarding) {
       setAppState(prev => ({ ...prev, isUnlocked: false }));
+      sessionStorage.setItem('appInitialized', 'true');
     }
-  }, [storedPin, appState.hasCompletedOnboarding]);
+  }, []);
 
   // Handle registration completion
   const handleRegistrationComplete = (data: UserData) => {
