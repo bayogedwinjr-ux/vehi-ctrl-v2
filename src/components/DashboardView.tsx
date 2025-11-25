@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
-import { Power, Wind, Video, Key } from "lucide-react";
+import { Power, Wind, Video, Key, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const ESP32_IP1 = "192.168.8.220";
 const ESP32_IP2 = "192.168.8.221";
@@ -23,6 +31,16 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   const [starterOn, setStarterOn] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>({ left: null, right: null });
   const [isIgnitionPressed, setIsIgnitionPressed] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  // Check if this is first dashboard visit
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+    if (!hasSeenWelcome) {
+      setShowWelcome(true);
+      localStorage.setItem('hasSeenWelcome', 'true');
+    }
+  }, []);
 
   // Fetch blindspot sensor data
   useEffect(() => {
@@ -115,7 +133,45 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   const rightStatus = getDetectionStatus(sensorData.right);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
+      {/* Welcome Dialog */}
+      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-gradient-primary rounded-full animate-pulse">
+                <Sparkles className="h-10 w-10 text-primary-foreground" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl">Welcome to TechnoDrive! 🚗</DialogTitle>
+            <DialogDescription className="text-center space-y-3 pt-2">
+              <p className="text-base">
+                Your vehicle control system is now ready to use.
+              </p>
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm text-left">
+                <p className="font-semibold text-foreground">Quick Guide:</p>
+                <ul className="space-y-1.5 text-muted-foreground">
+                  <li>• <span className="text-foreground">Starter</span> - Enable to unlock ignition</li>
+                  <li>• <span className="text-foreground">Ignition</span> - Hold to start the engine</li>
+                  <li>• <span className="text-foreground">AC</span> - Control climate system</li>
+                  <li>• <span className="text-foreground">Camera</span> - View 360° surroundings</li>
+                  <li>• <span className="text-foreground">Blindspot</span> - Red tail lights alert you</li>
+                </ul>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Your app is secured with biometric authentication and PIN protection.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowWelcome(false)} className="w-full" size="lg">
+              Get Started
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div className="flex flex-col min-h-screen">
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-4 sm:py-8">
         <div className="w-full max-w-md mx-auto flex flex-col items-center gap-4 sm:gap-6">
           {/* Blindspot Detection - Car Tail Lights Style */}
@@ -283,5 +339,6 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
         </div>
       </footer>
     </div>
+    </>
   );
 };

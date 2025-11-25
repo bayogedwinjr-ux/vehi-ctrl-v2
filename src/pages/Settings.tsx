@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserData } from "@/types/user";
 import { toast } from "sonner";
-import { LogOut, Save, Shield } from "lucide-react";
+import { LogOut, Save, Shield, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ChangePinDialog } from "@/components/ChangePinDialog";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +33,8 @@ export const Settings = ({ userData, onSave, onSignOut }: SettingsProps) => {
   const [formData, setFormData] = useState<UserData>(userData);
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Partial<UserData>>({});
+  const [showChangePinDialog, setShowChangePinDialog] = useState(false);
+  const [storedPin, setStoredPin] = useLocalStorage<string | null>("userPin", null);
 
   const validate = () => {
     const newErrors: Partial<UserData> = {};
@@ -78,6 +82,11 @@ export const Settings = ({ userData, onSave, onSignOut }: SettingsProps) => {
     setFormData(userData);
     setIsEditing(false);
     setErrors({});
+  };
+
+  const handlePinChanged = (newPin: string) => {
+    setStoredPin(newPin);
+    toast.success("PIN changed successfully!");
   };
 
   return (
@@ -178,10 +187,26 @@ export const Settings = ({ userData, onSave, onSignOut }: SettingsProps) => {
             </div>
             <div className="flex-1">
               <h3 className="font-semibold">Security</h3>
-              <p className="text-sm text-muted-foreground">Your app is protected with a 6-digit PIN</p>
+              <p className="text-sm text-muted-foreground">Your app is protected with a 6-digit PIN and biometric authentication</p>
             </div>
           </div>
+          
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => setShowChangePinDialog(true)}
+          >
+            <KeyRound className="mr-2 h-4 w-4" />
+            Change PIN
+          </Button>
         </Card>
+
+        <ChangePinDialog
+          open={showChangePinDialog}
+          onOpenChange={setShowChangePinDialog}
+          currentPin={storedPin || ""}
+          onPinChanged={handlePinChanged}
+        />
 
         <Card className="p-6 border-destructive/20">
           <div className="space-y-4">
