@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import { Shield, Eye, EyeOff } from "lucide-react";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
 interface PinSetupProps {
   onComplete: (pin: string) => void;
@@ -14,8 +15,11 @@ export const PinSetup = ({ onComplete }: PinSetupProps) => {
   const [confirmPin, setConfirmPin] = useState("");
   const [step, setStep] = useState<"create" | "confirm">("create");
   const [showPin, setShowPin] = useState(false);
+  const [shakeError, setShakeError] = useState(false);
 
-  const handlePinComplete = (value: string) => {
+  const handlePinComplete = async (value: string) => {
+    await Haptics.impact({ style: ImpactStyle.Light });
+    
     if (step === "create") {
       setPin(value);
       setStep("confirm");
@@ -26,11 +30,18 @@ export const PinSetup = ({ onComplete }: PinSetupProps) => {
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (pin === confirmPin) {
+      await Haptics.impact({ style: ImpactStyle.Heavy });
       toast.success("PIN created successfully!");
       onComplete(pin);
     } else {
+      await Haptics.impact({ style: ImpactStyle.Medium });
+      
+      // Trigger shake animation
+      setShakeError(true);
+      setTimeout(() => setShakeError(false), 500);
+      
       toast.error("PINs don't match. Please try again.");
       setStep("create");
       setPin("");
@@ -63,29 +74,31 @@ export const PinSetup = ({ onComplete }: PinSetupProps) => {
         <Card className="p-6 space-y-6">
           <div className="space-y-4">
             <div className="flex flex-col items-center gap-4">
-              <InputOTP
-                maxLength={6}
-                value={currentValue}
-                onChange={(value) => {
-                  if (step === "create") {
-                    setPin(value);
-                  } else {
-                    setConfirmPin(value);
-                  }
-                }}
-                onComplete={handlePinComplete}
-              >
-                <InputOTPGroup>
-                  {[0, 1, 2, 3, 4, 5].map((index) => (
-                    <InputOTPSlot
-                      key={index}
-                      index={index}
-                      className="w-12 h-14 text-2xl"
-                      masked={!showPin}
-                    />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
+              <div className={shakeError ? "animate-shake" : ""}>
+                <InputOTP
+                  maxLength={6}
+                  value={currentValue}
+                  onChange={(value) => {
+                    if (step === "create") {
+                      setPin(value);
+                    } else {
+                      setConfirmPin(value);
+                    }
+                  }}
+                  onComplete={handlePinComplete}
+                >
+                  <InputOTPGroup>
+                    {[0, 1, 2, 3, 4, 5].map((index) => (
+                      <InputOTPSlot
+                        key={index}
+                        index={index}
+                        className="w-12 h-14 text-2xl"
+                        masked={!showPin}
+                      />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
 
               <Button
                 variant="ghost"
