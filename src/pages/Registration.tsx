@@ -150,6 +150,20 @@ export const Registration = ({ onComplete, onBack }: RegistrationProps) => {
             </Button>
           </form>
         </Card>
+
+        <footer className="pt-8 text-center">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground font-medium">
+              TechnoDrive System v1.0
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Powered by: Reggienald Labayen
+            </p>
+            <p className="text-xs text-muted-foreground">
+              • All Rights Reserved
+            </p>
+          </div>
+        </footer>
       </div>
     </div>
   );
