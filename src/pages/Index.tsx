@@ -6,12 +6,19 @@ import { Welcome } from "./Welcome";
 import { Registration } from "./Registration";
 import { PinSetup } from "./PinSetup";
 import { PinEntry } from "./PinEntry";
+import { NetworkStatusOverlay } from "@/components/NetworkStatusOverlay";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { useVehicleAuth } from "@/hooks/useVehicleAuth";
 import { UserData, AppState } from "@/types/user";
 
 const Index = () => {
   const [activeView, setActiveView] = useState<"dashboard" | "camera">("dashboard");
   const [acOn, setAcOn] = useState(false);
+  
+  // Network and auth hooks
+  const { isConnected, checkNow: retryConnection } = useNetworkStatus();
+  const { authState, verifyDevice } = useVehicleAuth();
   
   // Local storage state
   const [userData, setUserData] = useLocalStorage<UserData | null>("userData", null);
@@ -34,6 +41,21 @@ const Index = () => {
       sessionStorage.setItem('appInitialized', 'true');
     }
   }, []);
+
+  // Verify device authorization on mount (if onboarding completed)
+  useEffect(() => {
+    if (appState.hasCompletedOnboarding && authState === 'checking') {
+      verifyDevice();
+    }
+  }, [appState.hasCompletedOnboarding, authState, verifyDevice]);
+
+  // Handle retry connection
+  const handleRetry = () => {
+    retryConnection();
+    if (appState.hasCompletedOnboarding) {
+      verifyDevice();
+    }
+  };
 
   // Handle registration completion
   const handleRegistrationComplete = (data: UserData) => {
@@ -76,24 +98,41 @@ const Index = () => {
 
   // Show PIN entry if app is locked
   if (storedPin && !appState.isUnlocked) {
-    return <PinEntry storedPin={storedPin} onSuccess={handlePinEntrySuccess} />;
+    return (
+      <>
+        <PinEntry storedPin={storedPin} onSuccess={handlePinEntrySuccess} />
+        <NetworkStatusOverlay 
+          isConnected={isConnected}
+          authState={authState}
+          onRetry={handleRetry}
+        />
+      </>
+    );
   }
 
   // Show main app
   return (
-    <Layout 
-      showBackButton={activeView === "camera"}
-      onBackClick={() => setActiveView("dashboard")}
-    >
-      {activeView === "dashboard" && (
-        <DashboardView 
-          onCameraClick={() => setActiveView("camera")}
-          acOn={acOn}
-          setAcOn={setAcOn}
-        />
-      )}
-      {activeView === "camera" && <CameraView />}
-    </Layout>
+    <>
+      <Layout 
+        showBackButton={activeView === "camera"}
+        onBackClick={() => setActiveView("dashboard")}
+      >
+        {activeView === "dashboard" && (
+          <DashboardView 
+            onCameraClick={() => setActiveView("camera")}
+            acOn={acOn}
+            setAcOn={setAcOn}
+          />
+        )}
+        {activeView === "camera" && <CameraView />}
+      </Layout>
+      
+      <NetworkStatusOverlay 
+        isConnected={isConnected}
+        authState={authState}
+        onRetry={handleRetry}
+      />
+    </>
   );
 };
 
