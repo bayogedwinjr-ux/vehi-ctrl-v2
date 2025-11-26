@@ -5,7 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserData } from "@/types/user";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { VEHICLE_CONFIG } from "@/config/vehicle";
+import { useVehicleAuth } from "@/hooks/useVehicleAuth";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 
 interface RegistrationProps {
   onComplete: (userData: UserData) => void;
@@ -13,6 +16,9 @@ interface RegistrationProps {
 }
 
 export const Registration = ({ onComplete, onBack }: RegistrationProps) => {
+  const { registerDevice, isLoading: isRegistering } = useVehicleAuth();
+  const { isConnected } = useNetworkStatus();
+  
   const [formData, setFormData] = useState<UserData>({
     vinNumber: "",
     ownerName: "",
@@ -21,6 +27,7 @@ export const Registration = ({ onComplete, onBack }: RegistrationProps) => {
   });
 
   const [errors, setErrors] = useState<Partial<UserData>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors: Partial<UserData> = {};
@@ -29,6 +36,8 @@ export const Registration = ({ onComplete, onBack }: RegistrationProps) => {
       newErrors.vinNumber = "VIN/Chassis number is required";
     } else if (formData.vinNumber.length < 5) {
       newErrors.vinNumber = "VIN must be at least 5 characters";
+    } else if (formData.vinNumber !== VEHICLE_CONFIG.authorizedVIN) {
+      newErrors.vinNumber = "Invalid VIN/Chassis number for this vehicle";
     }
 
     if (!formData.ownerName.trim()) {
@@ -51,13 +60,45 @@ export const Registration = ({ onComplete, onBack }: RegistrationProps) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      toast.success("Registration successful!");
-      onComplete(formData);
-    } else {
+    
+    if (!validate()) {
       toast.error("Please fix the errors in the form");
+      return;
+    }
+
+    // Check network connectivity
+    if (!isConnected) {
+      toast.error("Cannot connect to vehicle server. Check your WiFi connection.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Register device with Raspberry Pi server
+      const result = await registerDevice(formData.vinNumber);
+
+      if (result.success) {
+        toast.success("Device registered successfully!");
+        onComplete(formData);
+      } else {
+        toast.error(result.message);
+        
+        // If VIN error, set field error
+        if (result.message.toLowerCase().includes('vin')) {
+          setErrors(prev => ({
+            ...prev,
+            vinNumber: result.message
+          }));
+        }
+      }
+    } catch (error) {
+      toast.error("Registration failed. Please try again.");
+      console.error("Registration error:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -145,9 +186,27 @@ export const Registration = ({ onComplete, onBack }: RegistrationProps) => {
               )}
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Continue to Security Setup
+            <Button 
+              type="submit" 
+              className="w-full" 
+              size="lg"
+              disabled={isSubmitting || isRegistering || !isConnected}
+            >
+              {isSubmitting || isRegistering ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Registering...
+                </>
+              ) : (
+                "Continue to Security Setup"
+              )}
             </Button>
+            
+            {!isConnected && (
+              <p className="text-xs text-destructive text-center">
+                Not connected to vehicle network
+              </p>
+            )}
           </form>
         </Card>
 

@@ -12,9 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-const ESP32_IP1 = "192.168.8.220";
-const ESP32_IP2 = "192.168.8.221";
+import { VEHICLE_CONFIG } from "@/config/vehicle";
 
 interface SensorData {
   left: number | null;
@@ -55,10 +53,10 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   useEffect(() => {
     const fetchSensorData = async () => {
       try {
-        const leftResponse = await fetch('http://192.168.8.226/data');
+        const leftResponse = await fetch(`http://${VEHICLE_CONFIG.esp32LeftSensor.ip}/data`);
         const leftData = await leftResponse.json();
         
-        const rightResponse = await fetch('http://192.168.8.227/data');
+        const rightResponse = await fetch(`http://${VEHICLE_CONFIG.esp32RightSensor.ip}/data`);
         const rightData = await rightResponse.json();
         
         const newSensorData = {
@@ -101,7 +99,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
     if (!ignitionOn) return; // Can't use starter without ignition
     setIsStarterPressed(true);
     try {
-      const response = await fetch(`http://${ESP32_IP1}/control?starter=1`);
+      const response = await fetch(`http://${VEHICLE_CONFIG.esp32Control.ip}/control?starter=1`);
       if (response.ok) {
         setStarterOn(true);
         toast.success("Starter engaged");
@@ -116,7 +114,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
     if (!isStarterPressed) return; // Only release if button was pressed
     setIsStarterPressed(false);
     try {
-      const response = await fetch(`http://${ESP32_IP1}/control?starter=0`);
+      const response = await fetch(`http://${VEHICLE_CONFIG.esp32Control.ip}/control?starter=0`);
       if (response.ok) {
         setStarterOn(false);
         toast.success("Starter released");
@@ -130,7 +128,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   const handleIgnitionToggle = async () => {
     const newIgnitionState = !ignitionOn;
     try {
-      const response = await fetch(`http://${ESP32_IP1}/control?ignition=${newIgnitionState ? 1 : 0}`);
+      const response = await fetch(`http://${VEHICLE_CONFIG.esp32Control.ip}/control?ignition=${newIgnitionState ? 1 : 0}`);
       if (response.ok) {
         setIgnitionOn(newIgnitionState);
         toast.success(newIgnitionState ? "Ignition enabled" : "Ignition disabled");
@@ -144,7 +142,7 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   const handleAcToggle = async () => {
     const newAcState = !acOn;
     try {
-      const response = await fetch(`http://${ESP32_IP2}/control?ac=${newAcState ? 1 : 0}`);
+      const response = await fetch(`http://${VEHICLE_CONFIG.esp32AC.ip}/control?ac=${newAcState ? 1 : 0}`);
       if (response.ok) {
         setAcOn(newAcState);
         toast.success(newAcState ? "AC turned on" : "AC turned off");
