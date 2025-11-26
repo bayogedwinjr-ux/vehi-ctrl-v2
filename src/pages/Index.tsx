@@ -17,7 +17,7 @@ const Index = () => {
   const [acOn, setAcOn] = useState(false);
   
   // Network and auth hooks
-  const { isConnected, checkNow: retryConnection } = useNetworkStatus();
+  const { isConnected, checkNow: retryConnection, hasInitialCheck } = useNetworkStatus();
   const { authState, verifyDevice } = useVehicleAuth();
   
   // Local storage state
@@ -101,11 +101,12 @@ const Index = () => {
     return (
       <>
         <PinEntry storedPin={storedPin} onSuccess={handlePinEntrySuccess} />
-        <NetworkStatusOverlay 
-          isConnected={isConnected}
-          authState={authState}
-          onRetry={handleRetry}
-        />
+      <NetworkStatusOverlay 
+        isConnected={isConnected}
+        authState={authState}
+        onRetry={handleRetry}
+        hasInitialCheck={hasInitialCheck}
+      />
       </>
     );
   }
@@ -131,6 +132,7 @@ const Index = () => {
         isConnected={isConnected}
         authState={authState}
         onRetry={handleRetry}
+        hasInitialCheck={hasInitialCheck}
       />
     </>
   );

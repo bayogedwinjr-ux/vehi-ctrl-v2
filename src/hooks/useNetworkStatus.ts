@@ -16,9 +16,10 @@ import { VEHICLE_CONFIG, buildUrl } from '@/config/vehicle';
  * - checkNow: Function to manually trigger a check
  */
 export const useNetworkStatus = () => {
-  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(true); // Start optimistic
   const [isChecking, setIsChecking] = useState<boolean>(true);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [hasInitialCheck, setHasInitialCheck] = useState<boolean>(false);
 
   const checkConnection = useCallback(async () => {
     try {
@@ -47,6 +48,7 @@ export const useNetworkStatus = () => {
       console.log('Network check failed:', error);
     } finally {
       setIsChecking(false);
+      setHasInitialCheck(true);
     }
   }, []);
 
@@ -69,5 +71,6 @@ export const useNetworkStatus = () => {
     isChecking,
     lastChecked,
     checkNow: checkConnection,
+    hasInitialCheck, // Expose to prevent showing overlay during initial check
   };
 };
