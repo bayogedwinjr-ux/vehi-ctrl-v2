@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Power, Wind, Video, Key, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,14 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
   const [sensorData, setSensorData] = useState<SensorData>({ left: null, right: null });
   const [isStarterPressed, setIsStarterPressed] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [prevSensorData, setPrevSensorData] = useState<SensorData>({ left: null, right: null });
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio
+  useEffect(() => {
+    audioRef.current = new Audio('/sounds/blindspot-alert.mp3');
+    audioRef.current.volume = 0.8;
+  }, []);
 
   // Check if this is first dashboard visit
   useEffect(() => {
@@ -52,9 +61,31 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
         const rightResponse = await fetch('http://192.168.8.227/data');
         const rightData = await rightResponse.json();
         
-        setSensorData({
+        const newSensorData = {
           left: leftData.distance || null,
           right: rightData.distance || null,
+        };
+        
+        setSensorData(newSensorData);
+        setPrevSensorData(prevData => {
+          // Check if blindspot was just detected (changed from clear to detected)
+          const leftJustDetected = prevData.left !== 1 && newSensorData.left === 1;
+          const rightJustDetected = prevData.right !== 1 && newSensorData.right === 1;
+          
+          if (leftJustDetected || rightJustDetected) {
+            // Play sound
+            if (audioRef.current) {
+              audioRef.current.currentTime = 0;
+              audioRef.current.play().catch(err => console.error('Audio play error:', err));
+            }
+            
+            // Trigger haptic feedback
+            Haptics.impact({ style: ImpactStyle.Heavy }).catch(err => 
+              console.error('Haptics error:', err)
+            );
+          }
+          
+          return newSensorData;
         });
       } catch (error) {
         console.error('Error fetching sensor data:', error);
