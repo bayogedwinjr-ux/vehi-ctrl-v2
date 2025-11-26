@@ -333,9 +333,17 @@ export const DashboardView = ({ onCameraClick, acOn, setAcOn }: DashboardViewPro
       {/* Footer */}
       <footer className="py-3 sm:py-2 border-t border-border/50 flex-shrink-0">
         <div className="container mx-auto px-4">
-          <p className="text-[10px] sm:text-xs text-center text-muted-foreground">
-            TechnoDrive System v1.0 • All Rights Reserved
-          </p>
+          <div className="text-center space-y-0.5">
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+              TechnoDrive System v1.0
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              Powered by: Reggienald Labayen
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              • All Rights Reserved
+            </p>
+          </div>
         </div>
       </footer>
     </div>
