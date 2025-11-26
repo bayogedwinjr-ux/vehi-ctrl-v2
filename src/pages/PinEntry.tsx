@@ -19,10 +19,24 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
   const [showPin, setShowPin] = useState(false);
   const [shakeError, setShakeError] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
 
   useEffect(() => {
     checkBiometricAvailability();
   }, []);
+
+  // Countdown timer for lockout
+  useEffect(() => {
+    if (lockoutSeconds > 0) {
+      const timer = setTimeout(() => {
+        setLockoutSeconds(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (lockoutSeconds === 0 && attempts >= 3) {
+      // Reset attempts when countdown reaches 0
+      setAttempts(0);
+    }
+  }, [lockoutSeconds, attempts]);
 
   const checkBiometricAvailability = async () => {
     try {
@@ -77,8 +91,8 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
       setTimeout(() => setShakeError(false), 500);
       
       if (newAttempts >= 3) {
-        toast.error("Too many failed attempts. Please wait 30 seconds.");
-        setTimeout(() => setAttempts(0), 30000);
+        setLockoutSeconds(30);
+        toast.error("Too many failed attempts. Locked for 30 seconds.");
       } else {
         toast.error(`Incorrect PIN. ${3 - newAttempts} attempts remaining.`);
       }
@@ -101,7 +115,7 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
     }
   };
 
-  const isLocked = attempts >= 3;
+  const isLocked = attempts >= 3 && lockoutSeconds > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex items-center justify-center p-4">
@@ -182,9 +196,14 @@ export const PinEntry = ({ storedPin, onSuccess }: PinEntryProps) => {
             )}
 
             {isLocked && (
-              <p className="text-sm text-destructive text-center">
-                Too many failed attempts. Please wait 30 seconds.
-              </p>
+              <div className="text-center space-y-1">
+                <p className="text-sm text-destructive font-semibold">
+                  Too many failed attempts
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Please wait {lockoutSeconds} second{lockoutSeconds !== 1 ? 's' : ''}
+                </p>
+              </div>
             )}
           </div>
 

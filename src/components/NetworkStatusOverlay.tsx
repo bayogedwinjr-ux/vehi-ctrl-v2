@@ -8,13 +8,20 @@ interface NetworkStatusOverlayProps {
   isConnected: boolean;
   authState: AuthState;
   onRetry: () => void;
+  hasInitialCheck?: boolean;
 }
 
 export const NetworkStatusOverlay = ({
   isConnected,
   authState,
   onRetry,
+  hasInitialCheck = true,
 }: NetworkStatusOverlayProps) => {
+  // Don't show overlay during initial connection check to prevent flash
+  if (!hasInitialCheck) {
+    return null;
+  }
+
   // Don't show overlay if everything is fine
   if (isConnected && authState === 'verified') {
     return null;
