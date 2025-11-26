@@ -1,144 +1,251 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import RPi.GPIO as GPIO
-import sys
+import json
+import os
+from datetime import datetime
 
 app = Flask(__name__)
-# Enable CORS to allow your React app to communicate with this server
 CORS(app)
 
 # --- Configuration ---
-# Use BCM pin numbering
-IGNITION_PIN = 23     # Physical Pin 16 (Ignition - Electrical system)
-STARTER_PIN = 17      # Physical Pin 11 (Starter - Motor that cranks engine)
-COMPRESSOR_PIN = 27   # Physical Pin 13 (AC Compressor)
-FAN_PIN = 22          # Physical Pin 15 (AC Fan)
+REGISTRATION_FILE = "/home/pi/technodrive_registration.json"
+AUTHORIZED_VIN = "EE90-9073699"
 
-# --- GPIO Setup ---
-try:
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    
-    # Initialize pins
-    pins = [IGNITION_PIN, STARTER_PIN, COMPRESSOR_PIN, FAN_PIN]
-    
-    for pin in pins:
-        GPIO.setup(pin, GPIO.OUT)
-        # ACTIVE LOW: Set to HIGH initially to keep relays OFF
-        GPIO.output(pin, GPIO.HIGH) 
-        
-    print(f"GPIO Initialized (Active Low): Starter={STARTER_PIN}, Ignition={IGNITION_PIN}, Compressor={COMPRESSOR_PIN}, Fan={FAN_PIN}")
-
-except Exception as e:
-    print(f"Error initializing GPIO: {e}")
-    sys.exit(1)
-
-@app.route('/control', methods=['GET'])
-def control_vehicle():
-    """
-    Handles requests like:
-    GET /control?ignition=1  -> Sets Ignition Relay ON (GPIO LOW) - Electrical system
-    GET /control?starter=1   -> Sets Starter Relay ON (GPIO LOW) - Motor that cranks engine
-    GET /control?ac=1        -> Sets AC Relays ON (GPIO LOW)
-    """
-    response_data = {"status": "success"}
-    
-    # 1. Handle Ignition Command (Electrical system)
-    ignition_cmd = request.args.get('ignition')
-    if starter_cmd is not None:
-        try:
-            state = int(starter_cmd)
-            if state in [0, 1]:
-                # ACTIVE LOW LOGIC: 1 -> LOW (ON), 0 -> HIGH (OFF)
-                gpio_state = GPIO.LOW if state == 1 else GPIO.HIGH
-                GPIO.output(STARTER_PIN, gpio_state)
-                
-                response_data['starter'] = "ON" if state else "OFF"
-                print(f"Starter set to: {response_data['starter']} (GPIO level: {gpio_state})")
-            else:
-                return jsonify({"error": "Invalid starter value. Use 0 or 1"}), 400
-        except ValueError:
-            return jsonify({"error": "Starter value must be an integer"}), 400
-
-    # 2. Handle Ignition Command
-    ignition_cmd = request.args.get('ignition')
-    if ignition_cmd is not None:
-        try:
-            state = int(ignition_cmd)
-            if state in [0, 1]:
-                # ACTIVE LOW LOGIC: 1 -> LOW (ON), 0 -> HIGH (OFF)
-                gpio_state = GPIO.LOW if state == 1 else GPIO.HIGH
-                GPIO.output(IGNITION_PIN, gpio_state)
-                
-                response_data['ignition'] = "ON" if state else "OFF"
-                print(f"Ignition set to: {response_data['ignition']} (GPIO level: {gpio_state})")
-            else:
-                return jsonify({"error": "Invalid ignition value. Use 0 or 1"}), 400
-        except ValueError:
-            return jsonify({"error": "Ignition value must be an integer"}), 400
-
-    # 2. Handle Starter Command (Motor that cranks engine)
-    starter_cmd = request.args.get('starter')
-    if starter_cmd is not None:
-        try:
-            state = int(starter_cmd)
-            if state in [0, 1]:
-                # ACTIVE LOW LOGIC: 1 -> LOW (ON), 0 -> HIGH (OFF)
-                gpio_state = GPIO.LOW if state == 1 else GPIO.HIGH
-                GPIO.output(STARTER_PIN, gpio_state)
-                
-                response_data['starter'] = "ON" if state else "OFF"
-                print(f"Starter set to: {response_data['starter']} (GPIO level: {gpio_state})")
-            else:
-                return jsonify({"error": "Invalid starter value. Use 0 or 1"}), 400
-        except ValueError:
-            return jsonify({"error": "Starter value must be an integer"}), 400
-
-    # 3. Handle AC Command (Controls both Compressor and Fan)
-    ac_cmd = request.args.get('ac')
-    if ac_cmd is not None:
-        try:
-            state = int(ac_cmd)
-            if state in [0, 1]:
-                # ACTIVE LOW LOGIC: 1 -> LOW (ON), 0 -> HIGH (OFF)
-                gpio_state = GPIO.LOW if state == 1 else GPIO.HIGH
-                
-                # Control BOTH GPIOs simultaneously
-                GPIO.output(COMPRESSOR_PIN, gpio_state)
-                GPIO.output(FAN_PIN, gpio_state)
-                
-                status_text = "ON" if state else "OFF"
-                response_data['ac_compressor'] = status_text
-                response_data['ac_fan'] = status_text
-                print(f"AC System set to: {status_text} (GPIO level: {gpio_state})")
-            else:
-                return jsonify({"error": "Invalid AC value. Use 0 or 1"}), 400
-        except ValueError:
-            return jsonify({"error": "AC value must be an integer"}), 400
-
-    return jsonify(response_data)
+# --- Registration Endpoints ---
 
 @app.route('/', methods=['GET'])
 def health_check():
+    """Health check endpoint"""
     return jsonify({
-        "message": "VehiCtrl Raspberry Pi Server is running (Active Low Config)",
-        "config": {
-            "starter_pin": STARTER_PIN,
-            "ignition_pin": IGNITION_PIN,
-            "compressor_pin": COMPRESSOR_PIN,
-            "fan_pin": FAN_PIN,
-            "logic": "Active Low (0=ON, 1=OFF)"
-        }
+        "status": "online",
+        "message": "TechnoDrive Registration Server",
+        "version": "1.0"
     })
+
+@app.route('/register', methods=['POST'])
+def register_device():
+    """
+    Register a device with VIN and device ID
+    
+    Request body:
+    {
+        "vin": "EE90-9073699",
+        "device_id": "unique-device-identifier"
+    }
+    
+    Returns:
+    - 200: Device registered successfully
+    - 401: Invalid VIN
+    - 409: VIN already registered to another device
+    - 400: Missing required fields
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "Request body is required"}), 400
+        
+        vin = data.get('vin')
+        device_id = data.get('device_id')
+        
+        # Validate required fields
+        if not vin or not device_id:
+            return jsonify({"error": "VIN and device_id are required"}), 400
+        
+        # Validate VIN matches authorized VIN
+        if vin != AUTHORIZED_VIN:
+            return jsonify({
+                "error": "Invalid VIN/Chassis number",
+                "message": "This VIN is not authorized for this system"
+            }), 401
+        
+        # Check if VIN is already registered to a different device
+        if os.path.exists(REGISTRATION_FILE):
+            try:
+                with open(REGISTRATION_FILE, 'r') as f:
+                    existing = json.load(f)
+                    
+                if existing.get('device_id') != device_id:
+                    return jsonify({
+                        "error": "VIN already registered",
+                        "message": "This VIN is already registered to another device"
+                    }), 409
+                else:
+                    # Same device re-registering - update timestamp
+                    registration = {
+                        "vin": vin,
+                        "device_id": device_id,
+                        "registered_at": existing.get('registered_at'),
+                        "last_verified": datetime.now().isoformat()
+                    }
+                    with open(REGISTRATION_FILE, 'w') as f:
+                        json.dump(registration, f, indent=2)
+                    
+                    return jsonify({
+                        "status": "registered",
+                        "message": "Device re-registered successfully"
+                    })
+            except json.JSONDecodeError:
+                # Corrupted file, will recreate below
+                pass
+        
+        # Register new device
+        registration = {
+            "vin": vin,
+            "device_id": device_id,
+            "registered_at": datetime.now().isoformat(),
+            "last_verified": datetime.now().isoformat()
+        }
+        
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(REGISTRATION_FILE), exist_ok=True)
+        
+        with open(REGISTRATION_FILE, 'w') as f:
+            json.dump(registration, f, indent=2)
+        
+        print(f"[REGISTRATION] New device registered - VIN: {vin[:8]}..., Device: {device_id[:16]}...")
+        
+        return jsonify({
+            "status": "registered",
+            "message": "Device registered successfully"
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] Registration error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/verify', methods=['GET'])
+def verify_device():
+    """
+    Verify if a device is authorized
+    
+    Query parameters:
+    - device_id: The device identifier to verify
+    
+    Returns:
+    - 200: Device is verified
+    - 403: Device not authorized
+    - 404: No registration found
+    - 400: Missing device_id
+    """
+    try:
+        device_id = request.args.get('device_id')
+        
+        if not device_id:
+            return jsonify({"error": "device_id parameter is required"}), 400
+        
+        # Check if registration file exists
+        if not os.path.exists(REGISTRATION_FILE):
+            return jsonify({
+                "verified": False,
+                "reason": "No registration found",
+                "message": "This vehicle has not been registered yet"
+            }), 404
+        
+        # Read registration
+        try:
+            with open(REGISTRATION_FILE, 'r') as f:
+                registration = json.load(f)
+        except json.JSONDecodeError:
+            return jsonify({
+                "verified": False,
+                "reason": "Invalid registration data"
+            }), 500
+        
+        # Verify device ID matches
+        if registration.get('device_id') == device_id:
+            # Update last verified timestamp
+            registration['last_verified'] = datetime.now().isoformat()
+            with open(REGISTRATION_FILE, 'w') as f:
+                json.dump(registration, f, indent=2)
+            
+            return jsonify({
+                "verified": True,
+                "vin": registration.get('vin'),
+                "registered_at": registration.get('registered_at')
+            }), 200
+        else:
+            return jsonify({
+                "verified": False,
+                "reason": "Device not authorized",
+                "message": "This device is not registered to this vehicle"
+            }), 403
+            
+    except Exception as e:
+        print(f"[ERROR] Verification error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/status', methods=['GET'])
+def registration_status():
+    """
+    Get current registration status (for debugging)
+    Returns masked device ID for privacy
+    """
+    try:
+        if not os.path.exists(REGISTRATION_FILE):
+            return jsonify({
+                "registered": False,
+                "message": "No registration found"
+            })
+        
+        with open(REGISTRATION_FILE, 'r') as f:
+            registration = json.load(f)
+        
+        # Mask device ID for privacy (show first 8 chars + ...)
+        device_id = registration.get('device_id', '')
+        masked_device_id = device_id[:8] + '...' if len(device_id) > 8 else device_id
+        
+        return jsonify({
+            "registered": True,
+            "vin": registration.get('vin'),
+            "device_id_masked": masked_device_id,
+            "registered_at": registration.get('registered_at'),
+            "last_verified": registration.get('last_verified')
+        })
+        
+    except Exception as e:
+        print(f"[ERROR] Status error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/reset', methods=['POST'])
+def reset_registration():
+    """
+    Reset registration (for development/testing only)
+    Should be protected with authentication in production
+    """
+    try:
+        if os.path.exists(REGISTRATION_FILE):
+            os.remove(REGISTRATION_FILE)
+            print("[RESET] Registration file deleted")
+            return jsonify({
+                "status": "reset",
+                "message": "Registration reset successfully"
+            })
+        else:
+            return jsonify({
+                "status": "no_action",
+                "message": "No registration to reset"
+            })
+    except Exception as e:
+        print(f"[ERROR] Reset error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
     try:
-        print("Starting server on 0.0.0.0:80...")
-        # debug=False is recommended for production-like environment on Pi
-        app.run(host='0.0.0.0', port=80, debug=False)
+        print("=" * 60)
+        print("TechnoDrive Registration Server")
+        print("=" * 60)
+        print(f"Authorized VIN: {AUTHORIZED_VIN}")
+        print(f"Registration file: {REGISTRATION_FILE}")
+        print(f"Starting server on 0.0.0.0:5000...")
+        print("=" * 60)
+        
+        # Run on port 5000 (standard Flask port)
+        # Use port 80 if you want, but requires sudo
+        app.run(host='0.0.0.0', port=5000, debug=False)
+        
     except PermissionError:
-        print("Error: Binding to port 80 requires root privileges.")
-        print("Try running with sudo: sudo ./venv/bin/python server.py")
-    finally:
-        GPIO.cleanup()
-        print("GPIO Cleaned up.")
+        print("Error: Permission denied.")
+        print("Try running with sudo if using port 80: sudo python3 server.py")
+    except Exception as e:
+        print(f"Error starting server: {e}")
